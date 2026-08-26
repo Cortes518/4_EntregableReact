@@ -1,0 +1,494 @@
+{
+  "info": {
+    "_postman_id": "8f8b1b9e-647a-4ec6-8d5f-9e79b8a3e742",
+    "name": "PCortes - API Tercer Avance (SENA)",
+    "description": "Colección completa de pruebas para el Tercer Avance del Proyecto SENA. Incluye Autenticación JWT, CRUD de Usuarios, Productos y Servicios, y pruebas de roles y seguridad.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Autenticación",
+      "item": [
+        {
+          "name": "POST Registro de Cliente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombres\": \"Mariana\",\n  \"apellidos\": \"López\",\n  \"tipo_documento\": \"CC\",\n  \"numero_documento\": \"1098765432\",\n  \"direccion\": \"Carrera 7 # 45-10\",\n  \"telefono\": \"3119876543\",\n  \"email\": \"mariana.lopez@example.com\",\n  \"password\": \"Cliente2026*\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "POST Login Administrador (Guarda Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('token', jsonData.token);",
+                  "    console.log('Token JWT guardado automáticamente:', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@pcortes.com\",\n  \"password\": \"Admin12345*\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "POST Login Empleado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"empleado@pcortes.com\",\n  \"password\": \"Empleado12345*\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "GET Perfil Usuario Autenticado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/perfil",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "perfil"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Gestión de Usuarios (CRUD)",
+      "item": [
+        {
+          "name": "GET Listar Todos los Usuarios (Solo Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "GET Consultar Usuario por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/1",
+              "host": ["{{base_url}}"],
+              "path": ["users", "1"]
+            }
+          }
+        },
+        {
+          "name": "POST Crear Usuario (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombres\": \"Pedro\",\n  \"apellidos\": \"Ramírez\",\n  \"tipo_documento\": \"CC\",\n  \"numero_documento\": \"1055443322\",\n  \"direccion\": \"Av Santander # 12-34\",\n  \"telefono\": \"3205556677\",\n  \"email\": \"pedro.ramirez@pcortes.com\",\n  \"password\": \"Pedro2026*\",\n  \"id_rol\": 2,\n  \"estado\": \"Activo\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "PUT Actualizar Datos de Usuario",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombres\": \"Mariana Sofia\",\n  \"apellidos\": \"López Gómez\",\n  \"tipo_documento\": \"CC\",\n  \"numero_documento\": \"1098765432\",\n  \"direccion\": \"Calle 100 # 15-20 Apto 402\",\n  \"telefono\": \"3119876543\",\n  \"email\": \"mariana.lopez@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/3",
+              "host": ["{{base_url}}"],
+              "path": ["users", "3"]
+            }
+          }
+        },
+        {
+          "name": "PATCH Cambiar Estado de Usuario (Activo/Inactivo)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"Inactivo\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/3/status",
+              "host": ["{{base_url}}"],
+              "path": ["users", "3", "status"]
+            }
+          }
+        },
+        {
+          "name": "DELETE Eliminar Usuario (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/3",
+              "host": ["{{base_url}}"],
+              "path": ["users", "3"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Gestión de Productos (CRUD)",
+      "item": [
+        {
+          "name": "GET Listar Productos Activos (Público)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/productos",
+              "host": ["{{base_url}}"],
+              "path": ["productos"]
+            }
+          }
+        },
+        {
+          "name": "GET Listar Todos los Productos (Admin/Empleado)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/productos?all=true",
+              "host": ["{{base_url}}"],
+              "path": ["productos"],
+              "query": [
+                {
+                  "key": "all",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Crear Producto (Admin/Empleado)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Teclado Mecánico RGB Custom\",\n  \"descripcion\": \"Switches ópticos lineales, retroiluminación RGB por tecla y chasis de aluminio.\",\n  \"precio\": 350000,\n  \"stock\": 20,\n  \"estado\": \"Activo\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/productos",
+              "host": ["{{base_url}}"],
+              "path": ["productos"]
+            }
+          }
+        },
+        {
+          "name": "PUT Actualizar Producto",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Teclado Mecánico RGB Custom Pro\",\n  \"descripcion\": \"Switches lubricados, keycaps PBT doble inyección y cable paracord.\",\n  \"precio\": 380000,\n  \"stock\": 18,\n  \"estado\": \"Activo\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/productos/1",
+              "host": ["{{base_url}}"],
+              "path": ["productos", "1"]
+            }
+          }
+        },
+        {
+          "name": "DELETE Eliminar Producto (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/productos/6",
+              "host": ["{{base_url}}"],
+              "path": ["productos", "6"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Gestión de Servicios (CRUD)",
+      "item": [
+        {
+          "name": "GET Listar Servicios (Público)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/servicios",
+              "host": ["{{base_url}}"],
+              "path": ["servicios"]
+            }
+          }
+        },
+        {
+          "name": "POST Crear Servicio (Admin/Empleado)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Calibración y Perfilado de Monitores\",\n  \"descripcion\": \"Calibración con colorímetro profesional para diseñadores gráficos y editores.\",\n  \"precio\": 110000,\n  \"estado\": \"Activo\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/servicios",
+              "host": ["{{base_url}}"],
+              "path": ["servicios"]
+            }
+          }
+        },
+        {
+          "name": "PUT Actualizar Servicio",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Calibración Profesional de Monitores IPS/OLED\",\n  \"descripcion\": \"Generación de perfiles ICC y certificación delta E < 1.\",\n  \"precio\": 130000,\n  \"estado\": \"Activo\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/servicios/1",
+              "host": ["{{base_url}}"],
+              "path": ["servicios", "1"]
+            }
+          }
+        },
+        {
+          "name": "DELETE Eliminar Servicio (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/servicios/5",
+              "host": ["{{base_url}}"],
+              "path": ["servicios", "5"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Pruebas de Seguridad y Respuestas de Error",
+      "item": [
+        {
+          "name": "GET Ruta Protegida SIN Token (Esperado: 401 Unauthorized)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "POST Login con Credenciales Erróneas (Esperado: 401 Unauthorized)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"usuario.inexistente@correo.com\",\n  \"password\": \"ClaveIncorrecta123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "POST Registro con Formato Inválido (Esperado: 400 Bad Request)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombres\": \"A\",\n  \"apellidos\": \"B\",\n  \"tipo_documento\": \"CC\",\n  \"numero_documento\": \"123\",\n  \"direccion\": \"Cll\",\n  \"telefono\": \"123\",\n  \"email\": \"correo_invalido\",\n  \"password\": \"123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

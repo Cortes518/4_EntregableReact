@@ -1,0 +1,36 @@
+import Header from '../components/header';
+import Footer from '../components/footer';
+import Carousel from '../components/carousel';
+
+export default function QuienesPage() {
+  return (
+    <div className="flex flex-col min-h-screen bg-slate-900 text-slate-100">
+      <Header />
+
+      <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-10 flex flex-col gap-10">
+        <section className="text-center">
+          <h1 className="text-4xl font-bold text-white mb-3">Quiénes Somos</h1>
+          <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+            Somos PCortes, una empresa colombiana especializada en la venta y ensamble de PCs de alto rendimiento.
+          </p>
+        </section>
+
+        <Carousel />
+
+        <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {[
+            { titulo: 'Nuestra Misión', desc: 'Ofrecer la mejor tecnología en equipos de cómputo, brindando calidad, garantía y soporte técnico a nuestros clientes.' },
+            { titulo: 'Nuestra Visión', desc: 'Convertirnos en la tienda #1 de PCs ensambladas en Colombia, reconocidos por nuestro servicio y rendimiento.' },
+          ].map(({ titulo, desc }) => (
+            <div key={titulo} className="bg-slate-800 border border-slate-700 rounded-xl p-6 hover:border-sky-500 transition-all">
+              <h3 className="text-white font-semibold text-lg mb-2">{titulo}</h3>
+              <p className="text-slate-400 text-sm">{desc}</p>
+            </div>
+          ))}
+        </section>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}

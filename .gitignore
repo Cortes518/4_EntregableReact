@@ -1,0 +1,20 @@
+# Dependencias de Node.js (Excluir carpetas pesadas de node_modules)
+node_modules/
+**/node_modules/
+
+# Archivos de compilación del Frontend (React + Vite)
+dist/
+**/dist/
+build/
+
+# Logs de ejecución
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Archivos del sistema operativo y editores de código
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
