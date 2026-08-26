@@ -9,6 +9,7 @@ import QuienesPage from './pages/quienes';
 import ContactoPage from './pages/contacto';
 import LoginPage from './pages/login';
 import ProductosPage from './pages/productos';
+import ServiciosPage from './pages/servicios';
 
 // Paneles por Rol
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -26,6 +27,7 @@ function App() {
           <Route path="/contacto" element={<ContactoPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/productos" element={<ProductosPage />} />
+          <Route path="/servicios" element={<ServiciosPage />} />
 
           {/* Rutas Protegidas por Rol */}
           <Route
