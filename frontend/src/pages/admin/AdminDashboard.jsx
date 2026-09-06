@@ -36,9 +36,9 @@ export default function AdminDashboard() {
         productService.getAll(true),
         serviceService.getAll(true),
       ]);
-      setUsuarios(u.usuarios || []);
-      setProductos(p.productos || []);
-      setServicios(s.servicios || []);
+      setUsuarios(Array.isArray(u) ? u : (u?.usuarios || []));
+      setProductos(Array.isArray(p) ? p : (p?.productos || []));
+      setServicios(Array.isArray(s) ? s : (s?.servicios || []));
     } catch (err) {
       alert(err.message || 'Error al cargar datos.');
     } finally {

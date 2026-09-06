@@ -21,10 +21,12 @@ function validar(form) {
   if (!form.nombre.trim()) err.nombre = 'El nombre es obligatorio.';
   else if (!soloLetras.test(form.nombre)) err.nombre = 'Solo se permiten letras.';
   else if (form.nombre.trim().length < 2) err.nombre = 'Mínimo 2 caracteres.';
+  else if (form.nombre.trim().length > 30) err.nombre = 'Máximo 30 caracteres.';
 
   if (!form.apellido.trim()) err.apellido = 'El apellido es obligatorio.';
   else if (!soloLetras.test(form.apellido)) err.apellido = 'Solo se permiten letras.';
   else if (form.apellido.trim().length < 2) err.apellido = 'Mínimo 2 caracteres.';
+  else if (form.apellido.trim().length > 30) err.apellido = 'Máximo 30 caracteres.';
 
   if (!form.tipoDoc) err.tipoDoc = 'Selecciona un tipo de documento.';
 
@@ -33,15 +35,18 @@ function validar(form) {
 
   if (!form.direccion.trim()) err.direccion = 'La dirección es obligatoria.';
   else if (form.direccion.trim().length < 5) err.direccion = 'Mínimo 5 caracteres.';
+  else if (form.direccion.trim().length > 30) err.direccion = 'Máximo 30 caracteres.';
 
   if (!form.telefono) err.telefono = 'El teléfono es obligatorio.';
   else if (!telefonoRegex.test(form.telefono)) err.telefono = 'Debe tener entre 7 y 10 dígitos numéricos.';
 
   if (!form.email) err.email = 'El correo es obligatorio.';
   else if (!emailRegex.test(form.email)) err.email = 'Formato de correo inválido.';
+  else if (form.email.length > 30) err.email = 'Máximo 30 caracteres.';
 
   if (!form.password) err.password = 'La contraseña es obligatoria.';
   else if (form.password.length < 8) err.password = 'Mínimo 8 caracteres.';
+  else if (form.password.length > 30) err.password = 'Máximo 30 caracteres.';
 
   if (!form.confirmar) err.confirmar = 'Debes confirmar la contraseña.';
   else if (form.password !== form.confirmar) err.confirmar = 'Las contraseñas no coinciden.';
@@ -65,28 +70,53 @@ export default function RegisterModal({ onCerrar }) {
   const { register } = useAuth();
 
   const [form, setForm] = useState(VACIO);
+  const [touched, setTouched] = useState({});
   const [errores, setErrores] = useState({});
   const [errorServidor, setErrorServidor] = useState('');
   const [cargando, setCargando] = useState(false);
   const [registrado, setRegistrado] = useState(false);
 
-  // Validar en tiempo real si ya hubo un intento de envío
+  // Validar en tiempo real para todos los campos interactuados (touched)
   useEffect(() => {
-    if (Object.keys(errores).length > 0) {
-      setErrores(validar(form));
-    }
-  }, [form]);
+    const allErrors = validar(form);
+    const activeErrors = {};
+    Object.keys(allErrors).forEach((key) => {
+      if (touched[key]) {
+        activeErrors[key] = allErrors[key];
+      }
+    });
+    setErrores(activeErrors);
+  }, [form, touched]);
+
+  const handleBlur = (e) => {
+    const { id } = e.target;
+    setTouched((prev) => ({ ...prev, [id]: true }));
+  };
 
   const handleChange = (e) => {
     const { id, value } = e.target;
     // Restricción de caracteres numéricos
     if (['numDoc', 'telefono'].includes(id) && /[^0-9]/.test(value)) return;
+    setTouched((prev) => ({ ...prev, [id]: true }));
     setForm((prev) => ({ ...prev, [id]: value }));
     setErrorServidor('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const allTouched = {
+      nombre: true,
+      apellido: true,
+      tipoDoc: true,
+      numDoc: true,
+      direccion: true,
+      telefono: true,
+      email: true,
+      password: true,
+      confirmar: true,
+    };
+    setTouched(allTouched);
+
     const err = validar(form);
     setErrores(err);
     if (Object.keys(err).length > 0) return;
@@ -152,24 +182,117 @@ export default function RegisterModal({ onCerrar }) {
           </div>
         ) : (
           <form onSubmit={handleSubmit} noValidate className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input id="nombre" label="Nombres" value={form.nombre} onChange={handleChange} error={errores.nombre} required maxLength={50} />
-            <Input id="apellido" label="Apellidos" value={form.apellido} onChange={handleChange} error={errores.apellido} required maxLength={50} />
+            <Input
+              id="nombre"
+              label="Nombres"
+              value={form.nombre}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errores.nombre}
+              helperText="Máx. 30 caracteres (solo letras)"
+              required
+              maxLength={30}
+            />
+            <Input
+              id="apellido"
+              label="Apellidos"
+              value={form.apellido}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errores.apellido}
+              helperText="Máx. 30 caracteres (solo letras)"
+              required
+              maxLength={30}
+            />
 
             <Select
               id="tipoDoc"
               label="Tipo de documento"
               value={form.tipoDoc}
-              onChange={(e) => setForm((p) => ({ ...p, tipoDoc: e.target.value }))}
+              onChange={(e) => {
+                setTouched((p) => ({ ...p, tipoDoc: true }));
+                setForm((p) => ({ ...p, tipoDoc: e.target.value }));
+              }}
               options={TIPOS_DOC}
               error={errores.tipoDoc}
               required
             />
-            <Input id="numDoc" label="Número de documento" value={form.numDoc} onChange={handleChange} error={errores.numDoc} required maxLength={12} placeholder="Ej: 1020304050" />
-            <Input id="direccion" label="Dirección de residencia" value={form.direccion} onChange={handleChange} error={errores.direccion} required maxLength={100} className="sm:col-span-2" placeholder="Ej: Calle 45 # 12-34" />
-            <Input id="telefono" label="Teléfono de contacto" value={form.telefono} onChange={handleChange} error={errores.telefono} required maxLength={10} placeholder="Ej: 3001234567" />
-            <Input id="email" label="Correo electrónico" type="email" value={form.email} onChange={handleChange} error={errores.email} required maxLength={80} placeholder="usuario@correo.com" />
-            <Input id="password" label="Contraseña" type="password" value={form.password} onChange={handleChange} error={errores.password} required placeholder="Mínimo 8 caracteres" />
-            <Input id="confirmar" label="Confirmar contraseña" type="password" value={form.confirmar} onChange={handleChange} error={errores.confirmar} required placeholder="Repite tu contraseña" />
+            <Input
+              id="numDoc"
+              label="Número de documento"
+              value={form.numDoc}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errores.numDoc}
+              helperText="Entre 5 y 12 dígitos"
+              required
+              maxLength={12}
+              placeholder="Ej: 1020304050"
+            />
+            <Input
+              id="direccion"
+              label="Dirección de residencia"
+              value={form.direccion}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errores.direccion}
+              helperText="Máx. 30 caracteres"
+              required
+              maxLength={30}
+              className="sm:col-span-2"
+              placeholder="Ej: Calle 45 # 12-34"
+            />
+            <Input
+              id="telefono"
+              label="Teléfono de contacto"
+              value={form.telefono}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errores.telefono}
+              helperText="Entre 7 y 10 dígitos"
+              required
+              maxLength={10}
+              placeholder="Ej: 3001234567"
+            />
+            <Input
+              id="email"
+              label="Correo electrónico"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errores.email}
+              helperText="Máx. 30 caracteres"
+              required
+              maxLength={30}
+              placeholder="usuario@correo.com"
+            />
+            <Input
+              id="password"
+              label="Contraseña"
+              type="password"
+              value={form.password}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errores.password}
+              helperText="Entre 8 y 30 caracteres"
+              required
+              maxLength={30}
+              placeholder="Mínimo 8 caracteres"
+            />
+            <Input
+              id="confirmar"
+              label="Confirmar contraseña"
+              type="password"
+              value={form.confirmar}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errores.confirmar}
+              helperText="Debe coincidir con la contraseña"
+              required
+              maxLength={30}
+              placeholder="Repite tu contraseña"
+            />
 
             <div className="sm:col-span-2 flex justify-end gap-3 mt-4">
               <Button type="button" variant="ghost" onClick={onCerrar} disabled={cargando}>Cancelar</Button>
@@ -183,3 +306,4 @@ export default function RegisterModal({ onCerrar }) {
     </div>
   );
 }
+

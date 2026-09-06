@@ -27,8 +27,8 @@ export default function EmpleadoDashboard() {
         productService.getAll(true),
         serviceService.getAll(true),
       ]);
-      setProductos(p.productos || []);
-      setServicios(s.servicios || []);
+      setProductos(Array.isArray(p) ? p : (p?.productos || []));
+      setServicios(Array.isArray(s) ? s : (s?.servicios || []));
     } catch (err) {
       alert(err.message || 'Error al cargar catálogo.');
     }

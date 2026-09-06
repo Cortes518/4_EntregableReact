@@ -31,7 +31,8 @@ export async function apiRequest(endpoint, { method = 'GET', body = null, header
         window.dispatchEvent(new Event('auth-logout'));
       }
 
-      const error = new Error(data.message || `Error en la petición (${response.status})`);
+      const errorMsg = typeof data.detail === 'string' ? data.detail : (data.message || `Error en la petición (${response.status})`);
+      const error = new Error(errorMsg);
       error.status = response.status;
       error.data = data;
       throw error;

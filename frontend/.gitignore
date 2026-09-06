@@ -1,24 +1,37 @@
-# Logs
-logs
-*.log
+﻿# Frontend — React 19 + Vite + Tailwind CSS
+
+# Dependencias de Node
+node_modules/
+
+# Build generado (no subir el output de produccion)
+dist/
+dist-ssr/
+
+# Variables de entorno de Vite
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Logs de gestores de paquetes
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+*.log
 
-node_modules
-dist
-dist-ssr
-*.local
+# Cache de Vite
+.vite/
 
-# Editor directories and files
+# Editor y OS
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
+Thumbs.db
 *.suo
+*.sw?
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?

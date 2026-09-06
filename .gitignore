@@ -1,20 +1,93 @@
-# Dependencias de Node.js (Excluir carpetas pesadas de node_modules)
-node_modules/
-**/node_modules/
+﻿# ============================================================
+#  .gitignore raiz - Proyecto PCortes Full Stack
+#  React 19 + Vite (frontend)  /  FastAPI + Python (backend)
+# ============================================================
 
-# Archivos de compilación del Frontend (React + Vite)
-dist/
-**/dist/
+# --- Python / FastAPI ---
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.egg
+*.egg-info/
 build/
+*.so
+*.dll
+*.spec
+# Variables de entorno sensibles del backend
+backend/.env
+backend/**/.env
+# Bases de datos locales SQLite (fallback)
+*.db
+*.sqlite
+*.sqlite3
+basedatos/*.db
+basedatos/*.sqlite
+# Pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
 
-# Logs de ejecución
-*.log
+# --- Node.js / React / Vite ---
+node_modules/
+frontend/node_modules/
+# Builds generados
+frontend/dist/
+dist-ssr/
+# Variables de entorno de Vite
+.env.local
+.env.*.local
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+# Logs de npm / yarn / pnpm
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
 
-# Archivos del sistema operativo y editores de código
-.DS_Store
-Thumbs.db
-.vscode/
+# --- Editores e IDEs ---
+.vscode/*
+!.vscode/extensions.json
 .idea/
+*.iml
+*.iws
+*.suo
+*.sw?
+*.swp
+*.swo
+*~
+
+# --- Sistema Operativo ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+.DS_Store
+.AppleDouble
+._*
+.Spotlight-V100
+.Trashes
+
+# --- Archivos temporales y de pruebas ---
+*.tmp
+*.temp
+*.bak
+*.orig
+test_api.js
+postman/
+*.postman_collection.json
+
+# --- Excepciones (SI deben subirse) ---
+!backend/.env.example
+!frontend/.env.example
+!basedatos/.gitkeep

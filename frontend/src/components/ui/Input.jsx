@@ -6,9 +6,12 @@ export default function Input({
   value,
   defaultValue,
   onChange,
+  onBlur,
   placeholder = '',
   error = '',
+  helperText = '',
   maxLength,
+  showCounter = true,
   required = false,
   className = '',
   ...props
@@ -27,6 +30,7 @@ export default function Input({
         {...(value !== undefined ? { value } : {})}
         {...(defaultValue !== undefined && value === undefined ? { defaultValue } : {})}
         onChange={onChange}
+        onBlur={onBlur}
         placeholder={placeholder}
         maxLength={maxLength}
         required={required}
@@ -35,7 +39,21 @@ export default function Input({
         }`}
         {...props}
       />
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      <div className="flex justify-between items-center text-xs min-h-[18px]">
+        {error ? (
+          <p className="text-red-400 font-medium">{error}</p>
+        ) : helperText ? (
+          <p className="text-slate-400">{helperText}</p>
+        ) : (
+          <span />
+        )}
+        {showCounter && maxLength && value !== undefined && (
+          <span className={`text-[11px] font-mono ml-2 ${value.length >= maxLength ? 'text-amber-400 font-bold' : 'text-slate-400'}`}>
+            {value.length}/{maxLength}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
+

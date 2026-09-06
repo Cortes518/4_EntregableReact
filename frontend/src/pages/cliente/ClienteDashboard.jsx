@@ -32,10 +32,11 @@ export default function ClienteDashboard() {
       setMensaje('');
 
       const res = await userService.updateUser(user.id_usuario, form);
-      if (res.success) {
-        actualizarUsuarioLocal(form);
-        setMensaje('¡Tus datos han sido actualizados con éxito en la base de datos!');
+      if (res && (res.id_usuario || res.id || res.success)) {
+        actualizarUsuarioLocal(res);
+        setMensaje('¡Tus datos personales han sido actualizados exitosamente en la base de datos!');
         setEditando(false);
+        setTimeout(() => setMensaje(''), 5000);
       }
     } catch (err) {
       setError(err.message || 'Error al actualizar información.');
