@@ -67,20 +67,12 @@ def startup_db_init():
     except Exception as e:
         print(f"[WARN] No se pudo ejecutar el seed inicial: {e}")
 
-# Incluir routers para Auth, Usuarios, Productos y Servicios (con soporte para alias en español e inglés)
+# Routers — Auth, Usuarios, Productos y Servicios bajo el prefijo versionado /api/v1/
 app.include_router(auth.router, prefix=f"{API_V1_STR}/auth", tags=["Autenticación"])
-app.include_router(auth.router, prefix="/api/auth", tags=["Autenticación (Alias)"])
-
 app.include_router(usuarios.router, prefix=f"{API_V1_STR}/usuarios", tags=["Usuarios"])
-app.include_router(usuarios.router, prefix=f"{API_V1_STR}/users", tags=["Usuarios (Alias Users)"])
-app.include_router(usuarios.router, prefix="/api/usuarios", tags=["Usuarios (Alias)"])
-app.include_router(usuarios.router, prefix="/api/users", tags=["Usuarios (Alias)"])
-
 app.include_router(productos.router, prefix=f"{API_V1_STR}/productos", tags=["Productos"])
-app.include_router(productos.router, prefix="/api/productos", tags=["Productos (Alias)"])
-
 app.include_router(servicios.router, prefix=f"{API_V1_STR}/servicios", tags=["Servicios"])
-app.include_router(servicios.router, prefix="/api/servicios", tags=["Servicios (Alias)"])
+
 
 @app.get("/")
 def root():
