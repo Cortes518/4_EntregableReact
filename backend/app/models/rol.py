@@ -9,3 +9,4 @@ class Role(Base):
     nombre = Column(String(50), unique=True, nullable=False)
 
     usuarios = relationship("User", back_populates="rol")
+    permisos = relationship("Permission", secondary="roles_permisos", back_populates="roles")
