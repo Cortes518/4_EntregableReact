@@ -1,0 +1,265 @@
+﻿{
+  "info": {
+    "name": "PCortes API - FastAPI",
+    "_postman_id": "pcortes-fastapi-2026",
+    "description": "Coleccion completa de endpoints para el proyecto PCortes Full Stack.\nBackend: FastAPI + Python | Base de datos: MySQL (phpMyAdmin)\n\nPASOS:\n1. Ejecuta 'Login Admin' primero - el token se guarda automaticamente en {{token}}\n2. Los endpoints protegidos usan Authorization: Bearer {{token}}\n3. Cambia los IDs en la URL segun los datos de tu base de datos",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:3000/api/v1", "type": "string" },
+    { "key": "token", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Autenticacion",
+      "item": [
+        {
+          "name": "Login Admin",
+          "event": [{"listen": "test","script": {"exec": ["if (pm.response.code === 200) {","    var json = pm.response.json();","    pm.collectionVariables.set('token', json.token);","    pm.test('Token guardado', () => pm.expect(json.token).to.be.a('string'));","}"],"type": "text/javascript"}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type","value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"email\": \"juanjocortes518@gmail.com\",\n  \"password\": \"Juanyt518\"\n}"},
+            "url": {"raw": "{{base_url}}/auth/login","host": ["{{base_url}}"],"path": ["auth","login"]},
+            "description": "Inicia sesion como Admin (juanjocortes518@gmail.com / Juanyt518). El token JWT se guarda automaticamente en la variable {{token}}."
+          }
+        },
+        {
+          "name": "Login Cliente",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type","value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"email\": \"cliente@pcortes.com\",\n  \"password\": \"Juanyt518\"\n}"},
+            "url": {"raw": "{{base_url}}/auth/login","host": ["{{base_url}}"],"path": ["auth","login"]}
+          }
+        },
+        {
+          "name": "Registrar Cliente",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type","value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"nombres\": \"Juan\",\n  \"apellidos\": \"Perez\",\n  \"tipo_documento\": \"CC\",\n  \"numero_documento\": \"1020304050\",\n  \"direccion\": \"Calle 45 No 12-34\",\n  \"telefono\": \"3001234567\",\n  \"email\": \"juan.perez@correo.com\",\n  \"password\": \"Juanyt518\"\n}"},
+            "url": {"raw": "{{base_url}}/auth/register","host": ["{{base_url}}"],"path": ["auth","register"]},
+            "description": "Registra un nuevo cliente. El rol se asigna automaticamente como Cliente (id_rol=3)."
+          }
+        },
+        {
+          "name": "Ver Perfil Propio (requiere token)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization","value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/auth/perfil","host": ["{{base_url}}"],"path": ["auth","perfil"]},
+            "description": "Devuelve los datos del usuario autenticado segun el token JWT."
+          }
+        },
+        {
+          "name": "Recuperar Contrasena (Simulado)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type","value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"email\": \"juanjocortes518@gmail.com\"\n}"},
+            "url": {"raw": "{{base_url}}/auth/forgot-password","host": ["{{base_url}}"],"path": ["auth","forgot-password"]},
+            "description": "Genera un codigo de recuperacion simulado. No envia correo real."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuarios",
+      "item": [
+        {
+          "name": "Listar Todos los Usuarios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/usuarios","host": ["{{base_url}}"],"path": ["usuarios"]}
+          }
+        },
+        {
+          "name": "Obtener Usuario por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/usuarios/6","host": ["{{base_url}}"],"path": ["usuarios","6"]},
+            "description": "Cambia el ID por el del usuario que quieres consultar."
+          }
+        },
+        {
+          "name": "Crear Usuario",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type","value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"nombres\": \"Maria\",\n  \"apellidos\": \"Lopez\",\n  \"tipo_documento\": \"CC\",\n  \"numero_documento\": \"9876543210\",\n  \"direccion\": \"Carrera 10 No 5-20\",\n  \"telefono\": \"3009876543\",\n  \"email\": \"maria.lopez@pcortes.com\",\n  \"password\": \"Juanyt518\",\n  \"id_rol\": 2,\n  \"estado\": \"Activo\"\n}"},
+            "url": {"raw": "{{base_url}}/usuarios","host": ["{{base_url}}"],"path": ["usuarios"]},
+            "description": "id_rol: 1=Administrador, 2=Empleado, 3=Cliente. Responde 201 Created."
+          }
+        },
+        {
+          "name": "Actualizar Usuario (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type","value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"nombres\": \"Maria Actualizada\",\n  \"apellidos\": \"Lopez Gomez\",\n  \"direccion\": \"Calle Nueva 99\",\n  \"telefono\": \"3110000001\"\n}"},
+            "url": {"raw": "{{base_url}}/usuarios/14","host": ["{{base_url}}"],"path": ["usuarios","14"]},
+            "description": "Actualiza los datos del usuario. Cambia el ID segun necesites."
+          }
+        },
+        {
+          "name": "Cambiar Estado - Inactivo (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type","value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"estado\": \"Inactivo\"\n}"},
+            "url": {"raw": "{{base_url}}/usuarios/14/estado","host": ["{{base_url}}"],"path": ["usuarios","14","estado"]}
+          }
+        },
+        {
+          "name": "Cambiar Estado - Activo (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type","value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"estado\": \"Activo\"\n}"},
+            "url": {"raw": "{{base_url}}/usuarios/14/estado","host": ["{{base_url}}"],"path": ["usuarios","14","estado"]}
+          }
+        },
+        {
+          "name": "Eliminar Usuario (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {"raw": "{{base_url}}/usuarios/16","host": ["{{base_url}}"],"path": ["usuarios","16"]},
+            "description": "Elimina permanentemente el usuario. Accion irreversible."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Productos",
+      "item": [
+        {
+          "name": "Listar Todos los Productos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/productos?all=true","host": ["{{base_url}}"],"path": ["productos"],"query": [{"key": "all","value": "true","description": "true=todos | false=solo Activos"}]}
+          }
+        },
+        {
+          "name": "Listar Solo Productos Activos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/productos?all=false","host": ["{{base_url}}"],"path": ["productos"],"query": [{"key": "all","value": "false"}]}
+          }
+        },
+        {
+          "name": "Obtener Producto por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/productos/1","host": ["{{base_url}}"],"path": ["productos","1"]}
+          }
+        },
+        {
+          "name": "Crear Producto (POST)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type","value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"nombre\": \"PC Gaming RTX 4090\",\n  \"descripcion\": \"PC de alto rendimiento con RTX 4090, 32GB RAM, 2TB NVMe\",\n  \"precio\": 8500000,\n  \"stock\": 5,\n  \"estado\": \"Activo\"\n}"},
+            "url": {"raw": "{{base_url}}/productos","host": ["{{base_url}}"],"path": ["productos"]}
+          }
+        },
+        {
+          "name": "Actualizar Producto (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type","value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"nombre\": \"PC Gaming RTX 4090 Pro\",\n  \"precio\": 9200000,\n  \"stock\": 3\n}"},
+            "url": {"raw": "{{base_url}}/productos/1","host": ["{{base_url}}"],"path": ["productos","1"]}
+          }
+        },
+        {
+          "name": "Cambiar Estado Producto (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type","value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"estado\": \"Inactivo\"\n}"},
+            "url": {"raw": "{{base_url}}/productos/1/estado","host": ["{{base_url}}"],"path": ["productos","1","estado"]}
+          }
+        },
+        {
+          "name": "Eliminar Producto (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {"raw": "{{base_url}}/productos/1","host": ["{{base_url}}"],"path": ["productos","1"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Servicios",
+      "item": [
+        {
+          "name": "Listar Todos los Servicios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/servicios?all=true","host": ["{{base_url}}"],"path": ["servicios"],"query": [{"key": "all","value": "true"}]}
+          }
+        },
+        {
+          "name": "Listar Solo Servicios Activos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/servicios?all=false","host": ["{{base_url}}"],"path": ["servicios"],"query": [{"key": "all","value": "false"}]}
+          }
+        },
+        {
+          "name": "Obtener Servicio por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {"raw": "{{base_url}}/servicios/1","host": ["{{base_url}}"],"path": ["servicios","1"]}
+          }
+        },
+        {
+          "name": "Crear Servicio (POST)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type","value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"nombre\": \"Mantenimiento Preventivo\",\n  \"descripcion\": \"Limpieza, pasta termica y revision de componentes\",\n  \"precio\": 120000,\n  \"estado\": \"Activo\"\n}"},
+            "url": {"raw": "{{base_url}}/servicios","host": ["{{base_url}}"],"path": ["servicios"]}
+          }
+        },
+        {
+          "name": "Actualizar Servicio (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type","value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"nombre\": \"Mantenimiento Preventivo Plus\",\n  \"precio\": 150000\n}"},
+            "url": {"raw": "{{base_url}}/servicios/1","host": ["{{base_url}}"],"path": ["servicios","1"]}
+          }
+        },
+        {
+          "name": "Cambiar Estado Servicio (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type","value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"estado\": \"Inactivo\"\n}"},
+            "url": {"raw": "{{base_url}}/servicios/1/estado","host": ["{{base_url}}"],"path": ["servicios","1","estado"]}
+          }
+        },
+        {
+          "name": "Eliminar Servicio (DELETE)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {"raw": "{{base_url}}/servicios/1","host": ["{{base_url}}"],"path": ["servicios","1"]}
+          }
+        }
+      ]
+    }
+  ]
+}
