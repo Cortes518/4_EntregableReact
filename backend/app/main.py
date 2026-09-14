@@ -50,18 +50,19 @@ def startup_db_init():
                 admin_user = User(
                     id_usuario=1,
                     id_rol=1,
-                    nombres="Administrador",
-                    apellidos="Sistema",
+                    nombres="Juan Jose",
+                    apellidos="Cortes ADMIN",
                     tipo_documento="CC",
-                    numero_documento="1000000001",
+                    numero_documento="1021926174",
                     direccion="Calle 100 # 15-20, Bogotá",
-                    telefono="3000000000",
-                    email="admin@pcortes.com",
-                    password=get_password_hash("admin123"),
+                    telefono="3237011356",
+                    email="juanjocortes518@gmail.com",
+                    password=get_password_hash("Juanyt518"),
                     estado="Activo"
                 )
                 db.add(admin_user)
                 db.commit()
+
         finally:
             db.close()
     except Exception as e:
