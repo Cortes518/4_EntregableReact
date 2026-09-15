@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Header from '../../components/header';
 import Footer from '../../components/footer';
 import Sidebar from '../../components/ui/Sidebar';
+import UserFormModal from '../../components/admin/UserFormModal';
 import { useAuth } from '../../context/AuthContext';
 import { userService } from '../../services/userService';
 import { productService } from '../../services/productService';
@@ -12,6 +13,7 @@ import ConfirmModal from '../../components/ui/ConfirmModal';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
+
 
 
 export default function AdminDashboard() {
@@ -58,32 +60,35 @@ export default function AdminDashboard() {
   };
 
   // Manejadores de formulario
-  const submitUser = async (e) => {
-    e.preventDefault();
-    const data = Object.fromEntries(new FormData(e.target).entries());
+  const handleSaveUser = async (formData) => {
     try {
       if (modalUser.modo === 'crear') {
-        await userService.create(data);
+        await userService.create(formData);
       } else {
-        await userService.update(modalUser.datos.id_usuario, {
-          nombres: data.nombres,
-          apellidos: data.apellidos,
-          tipo_documento: data.tipo_documento,
-          numero_documento: data.numero_documento,
-          direccion: data.direccion,
-          telefono: data.telefono,
-          email: data.email,
-          id_rol: parseInt(data.id_rol),
-          estado: data.estado,
-        });
+        const updatePayload = {
+          nombres: formData.nombres,
+          apellidos: formData.apellidos,
+          tipo_documento: formData.tipo_documento,
+          numero_documento: formData.numero_documento,
+          direccion: formData.direccion,
+          telefono: formData.telefono,
+          email: formData.email,
+          id_rol: parseInt(formData.id_rol),
+          estado: formData.estado,
+        };
+        if (formData.password && formData.password.trim()) {
+          updatePayload.password = formData.password.trim();
+        }
+        await userService.update(modalUser.datos.id_usuario, updatePayload);
       }
       notificar('¡Usuario guardado con éxito!');
       setModalUser({ abierto: false, modo: 'crear', datos: null });
       cargarDatos();
     } catch (err) {
-      alert(err.message || 'Error al guardar usuario');
+      throw err;
     }
   };
+
 
   const submitProd = async (e) => {
     e.preventDefault();
@@ -382,69 +387,15 @@ export default function AdminDashboard() {
       </div>
 
 
-      {/* Modal Usuario */}
-      <Modal
+      {/* Modal Usuario con Validación en Tiempo Real */}
+      <UserFormModal
         abierto={modalUser.abierto}
+        modo={modalUser.modo}
+        datos={modalUser.datos}
         onCerrar={() => setModalUser({ abierto: false, modo: 'crear', datos: null })}
-        titulo={modalUser.modo === 'crear' ? 'Nuevo Usuario' : 'Editar Usuario'}
-        maxWidth="max-w-xl"
-      >
-        <form
-          key={modalUser.datos ? `edit-u-${modalUser.datos.id_usuario}` : 'crear-u'}
-          onSubmit={submitUser}
-          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-        >
-          <Input id="nombres" name="nombres" label="Nombres" defaultValue={modalUser.datos?.nombres || ''} required />
-          <Input id="apellidos" name="apellidos" label="Apellidos" defaultValue={modalUser.datos?.apellidos || ''} required />
-          <Select
-            id="tipo_documento"
-            name="tipo_documento"
-            label="Tipo Documento"
-            defaultValue={modalUser.datos?.tipo_documento || 'CC'}
-            options={[
-              { value: 'CC', label: 'Cédula de Ciudadanía' },
-              { value: 'TI', label: 'Tarjeta de Identidad' },
-              { value: 'CE', label: 'Cédula de Extranjería' },
-              { value: 'PASAPORTE', label: 'Pasaporte' },
-            ]}
-            required
-          />
-          <Input id="numero_documento" name="numero_documento" label="N° Documento" defaultValue={modalUser.datos?.numero_documento || ''} required />
-          <Input id="email" name="email" label="Correo Electrónico" type="email" defaultValue={modalUser.datos?.email || ''} required />
-          <Input id="telefono" name="telefono" label="Teléfono" defaultValue={modalUser.datos?.telefono || ''} required />
-          <Input id="direccion" name="direccion" label="Dirección" defaultValue={modalUser.datos?.direccion || ''} className="sm:col-span-2" required />
-          <Select
-            id="id_rol"
-            name="id_rol"
-            label="Rol de Usuario"
-            defaultValue={String(modalUser.datos?.id_rol || 3)}
-            options={[
-              { value: '1', label: 'Administrador' },
-              { value: '2', label: 'Empleado' },
-              { value: '3', label: 'Cliente' },
-            ]}
-            required
-          />
-          <Select
-            id="estado"
-            name="estado"
-            label="Estado"
-            defaultValue={modalUser.datos?.estado || 'Activo'}
-            options={[
-              { value: 'Activo', label: 'Activo' },
-              { value: 'Inactivo', label: 'Inactivo' },
-            ]}
-            required
-          />
-          {modalUser.modo === 'crear' && (
-            <Input id="password" name="password" label="Contraseña Inicial" type="password" required className="sm:col-span-2" />
-          )}
-          <div className="sm:col-span-2 flex justify-end gap-3 mt-4 pt-3 border-t border-slate-800">
-            <Button type="button" variant="ghost" onClick={() => setModalUser({ abierto: false, modo: 'crear', datos: null })}>Cancelar</Button>
-            <Button type="submit" variant="primary">Guardar</Button>
-          </div>
-        </form>
-      </Modal>
+        onGuardar={handleSaveUser}
+      />
+
 
       {/* Modal Producto */}
       <Modal
