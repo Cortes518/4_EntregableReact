@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Header from '../../components/header';
 import Footer from '../../components/footer';
+import Sidebar from '../../components/ui/Sidebar';
 import { useAuth } from '../../context/AuthContext';
 import { userService } from '../../services/userService';
 import { productService } from '../../services/productService';
@@ -11,6 +12,7 @@ import ConfirmModal from '../../components/ui/ConfirmModal';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
+
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -258,109 +260,127 @@ export default function AdminDashboard() {
     <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100">
       <Header />
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-8">
-        {/* Cabecera */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="bg-amber-500/20 text-amber-300 text-xs font-bold px-2.5 py-1 rounded-md border border-amber-500/30 uppercase">
-                Panel de Control
-              </span>
-              <span className="text-slate-400 text-xs">Rol: Administrador</span>
+      <div className="flex-1 flex flex-col lg:flex-row w-full max-w-7xl mx-auto">
+        {/* Barra Lateral Minimalista */}
+        <Sidebar
+          items={[
+            { id: 'usuarios', label: 'Gestión Usuarios', icon: '👥', count: usuarios.length },
+            { id: 'productos', label: 'Catálogo Productos', icon: '💻', count: productos.length },
+            { id: 'servicios', label: 'Servicios Técnicos', icon: '🛠️', count: servicios.length },
+          ]}
+          activeTab={tab}
+          onSelectTab={(newTab) => { setTab(newTab); setBusqueda(''); }}
+          roleTitle="Panel General"
+          roleBadge="Administrador"
+          badgeColor="amber"
+          user={user}
+        />
+
+        {/* Área Principal de Contenido */}
+        <main className="flex-1 p-4 lg:p-8 min-w-0 flex flex-col gap-6">
+          {/* Cabecera minimalista de sección */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800/90 p-5 rounded-2xl shadow-lg">
+            <div>
+              <h1 className="text-2xl font-black text-white tracking-tight">
+                {tab === 'usuarios' && 'Gestión de Usuarios'}
+                {tab === 'productos' && 'Inventario de Productos'}
+                {tab === 'servicios' && 'Servicios Técnicos'}
+              </h1>
+              <p className="text-slate-400 text-xs mt-0.5">
+                {tab === 'usuarios' && 'Administra cuentas, roles y estados de acceso.'}
+                {tab === 'productos' && 'Controla precios, stock y visibilidad en catálogo.'}
+                {tab === 'servicios' && 'Configura tarifas y disponibilidad de servicios.'}
+              </p>
             </div>
-            <h1 className="text-3xl font-extrabold text-white">Gestión Integral del Sistema</h1>
-            <p className="text-slate-400 text-sm mt-1">
-              Bienvenido, <strong className="text-sky-400">{user?.nombres} {user?.apellidos}</strong>.
-            </p>
-          </div>
-          <Button onClick={cargarDatos} variant="ghost" className="border border-slate-700">
-            🔄 Refrescar
-          </Button>
-        </div>
 
-        {mensaje && (
-          <div className="mb-6 p-4 bg-emerald-900/60 border border-emerald-500/50 rounded-xl text-emerald-200 text-sm flex items-center gap-3">
-            <span>✅</span>
-            <span className="font-semibold">{mensaje}</span>
-          </div>
-        )}
-
-        {/* Métricas */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg">
-            <span className="text-sm text-slate-400">Total Usuarios</span>
-            <p className="text-3xl font-extrabold text-white mt-1">{usuarios.length}</p>
-          </div>
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg">
-            <span className="text-sm text-slate-400">Productos en Catálogo</span>
-            <p className="text-3xl font-extrabold text-white mt-1">{productos.length}</p>
-          </div>
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg">
-            <span className="text-sm text-slate-400">Servicios Técnicos</span>
-            <p className="text-3xl font-extrabold text-white mt-1">{servicios.length}</p>
-          </div>
-        </div>
-
-        {/* Pestañas y búsqueda */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-6">
-          <div className="flex gap-2">
-            {[
-              { id: 'usuarios', label: '👥 Usuarios', count: usuarios.length },
-              { id: 'productos', label: '💻 Productos', count: productos.length },
-              { id: 'servicios', label: '🛠️ Servicios', count: servicios.length },
-            ].map((t) => (
-              <button
-                key={t.id}
-                onClick={() => { setTab(t.id); setBusqueda(''); }}
-                className={`px-4 py-2 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
-                  tab === t.id ? 'bg-sky-600 text-white shadow-md shadow-sky-600/30' : 'bg-slate-900 text-slate-400 hover:text-white'
-                }`}
-              >
-                <span>{t.label}</span>
-                <span className="bg-slate-800 px-2 py-0.5 rounded-full text-xs text-sky-300">{t.count}</span>
-              </button>
-            ))}
+            <div className="flex items-center gap-2">
+              <Button onClick={cargarDatos} variant="ghost" className="border border-slate-700/80 text-xs py-2 px-3">
+                🔄 Refrescar
+              </Button>
+              {tab === 'usuarios' && (
+                <Button variant="primary" className="text-xs py-2 px-3.5" onClick={() => setModalUser({ abierto: true, modo: 'crear', datos: null })}>
+                  + Nuevo Usuario
+                </Button>
+              )}
+              {tab === 'productos' && (
+                <Button variant="primary" className="text-xs py-2 px-3.5" onClick={() => setModalProd({ abierto: true, modo: 'crear', datos: null })}>
+                  + Nuevo Producto
+                </Button>
+              )}
+              {tab === 'servicios' && (
+                <Button variant="primary" className="text-xs py-2 px-3.5" onClick={() => setModalServ({ abierto: true, modo: 'crear', datos: null })}>
+                  + Nuevo Servicio
+                </Button>
+              )}
+            </div>
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <input
-              type="text"
-              placeholder={`Buscar en ${tab}...`}
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              className="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-xl px-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none w-full sm:w-64"
-            />
-            {tab === 'usuarios' && <Button variant="primary" onClick={() => setModalUser({ abierto: true, modo: 'crear', datos: null })}>+ Usuario</Button>}
-            {tab === 'productos' && <Button variant="primary" onClick={() => setModalProd({ abierto: true, modo: 'crear', datos: null })}>+ Producto</Button>}
-            {tab === 'servicios' && <Button variant="primary" onClick={() => setModalServ({ abierto: true, modo: 'crear', datos: null })}>+ Servicio</Button>}
+          {mensaje && (
+            <div className="p-3.5 bg-emerald-900/50 border border-emerald-500/40 rounded-xl text-emerald-200 text-xs font-semibold flex items-center gap-2.5">
+              <span>✅</span>
+              <span>{mensaje}</span>
+            </div>
+          )}
+
+          {/* Tarjetas de Métricas Rápidas */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+            <div className={`p-4 rounded-xl border transition-all ${tab === 'usuarios' ? 'bg-slate-900 border-sky-500/30' : 'bg-slate-900/50 border-slate-800'}`}>
+              <span className="text-xs text-slate-400 font-medium">Usuarios Registrados</span>
+              <p className="text-2xl font-black text-white mt-0.5">{usuarios.length}</p>
+            </div>
+            <div className={`p-4 rounded-xl border transition-all ${tab === 'productos' ? 'bg-slate-900 border-sky-500/30' : 'bg-slate-900/50 border-slate-800'}`}>
+              <span className="text-xs text-slate-400 font-medium">Productos en Stock</span>
+              <p className="text-2xl font-black text-white mt-0.5">{productos.length}</p>
+            </div>
+            <div className={`p-4 rounded-xl border transition-all ${tab === 'servicios' ? 'bg-slate-900 border-sky-500/30' : 'bg-slate-900/50 border-slate-800'}`}>
+              <span className="text-xs text-slate-400 font-medium">Servicios Activos</span>
+              <p className="text-2xl font-black text-white mt-0.5">{servicios.length}</p>
+            </div>
           </div>
-        </div>
 
-        {/* Tablas reutilizables */}
-        {tab === 'usuarios' && (
-          <DataTable
-            columns={userCols}
-            data={filtrados(usuarios, ['nombres', 'apellidos', 'email', 'numero_documento'])}
-            keyField="id_usuario"
-          />
-        )}
+          {/* Barra de Filtro / Búsqueda */}
+          <div className="flex items-center justify-between gap-4">
+            <div className="relative flex-1 max-w-md">
+              <input
+                type="text"
+                placeholder={`Buscar en ${tab}...`}
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                className="w-full bg-slate-900/90 border border-slate-700/80 text-slate-200 text-xs rounded-xl pl-9 pr-4 py-2.5 focus:ring-2 focus:ring-sky-500 focus:outline-none placeholder:text-slate-500"
+              />
+              <span className="absolute left-3 top-2.5 text-xs text-slate-500">🔍</span>
+            </div>
+          </div>
 
-        {tab === 'productos' && (
-          <DataTable
-            columns={prodCols}
-            data={filtrados(productos, ['nombre', 'descripcion'])}
-            keyField="id"
-          />
-        )}
+          {/* Tablas de Datos */}
+          <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-1 overflow-hidden shadow-xl">
+            {tab === 'usuarios' && (
+              <DataTable
+                columns={userCols}
+                data={filtrados(usuarios, ['nombres', 'apellidos', 'email', 'numero_documento'])}
+                keyField="id_usuario"
+              />
+            )}
 
-        {tab === 'servicios' && (
-          <DataTable
-            columns={servCols}
-            data={filtrados(servicios, ['nombre', 'descripcion'])}
-            keyField="id"
-          />
-        )}
-      </main>
+            {tab === 'productos' && (
+              <DataTable
+                columns={prodCols}
+                data={filtrados(productos, ['nombre', 'descripcion'])}
+                keyField="id"
+              />
+            )}
+
+            {tab === 'servicios' && (
+              <DataTable
+                columns={servCols}
+                data={filtrados(servicios, ['nombre', 'descripcion'])}
+                keyField="id"
+              />
+            )}
+          </div>
+        </main>
+      </div>
+
 
       {/* Modal Usuario */}
       <Modal

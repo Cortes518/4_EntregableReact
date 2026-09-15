@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Header from '../../components/header';
 import Footer from '../../components/footer';
+import Sidebar from '../../components/ui/Sidebar';
 import { useAuth } from '../../context/AuthContext';
 import { productService } from '../../services/productService';
 import { serviceService } from '../../services/serviceService';
@@ -9,6 +10,7 @@ import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
+
 
 export default function EmpleadoDashboard() {
   const { user } = useAuth();
@@ -143,66 +145,98 @@ export default function EmpleadoDashboard() {
     <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100">
       <Header />
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-8">
-        <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <span className="bg-purple-500/20 text-purple-300 text-xs font-bold px-2.5 py-1 rounded-md border border-purple-500/30 uppercase">Panel Operativo</span>
-            <h1 className="text-3xl font-extrabold text-white mt-1">Gestión de Catálogo e Inventario</h1>
-            <p className="text-slate-400 text-sm">Bienvenido, <strong className="text-purple-400">{user?.nombres} {user?.apellidos}</strong>.</p>
-          </div>
-          <Button onClick={cargarDatos} variant="ghost" className="border border-slate-700">🔄 Refrescar</Button>
-        </div>
+      <div className="flex-1 flex flex-col lg:flex-row w-full max-w-7xl mx-auto">
+        {/* Barra Lateral Minimalista */}
+        <Sidebar
+          items={[
+            { id: 'productos', label: 'Inventario PCs', icon: '💻', count: productos.length },
+            { id: 'servicios', label: 'Servicios Técnicos', icon: '🛠️', count: servicios.length },
+          ]}
+          activeTab={tab}
+          onSelectTab={(newTab) => { setTab(newTab); setBusqueda(''); }}
+          roleTitle="Panel Operativo"
+          roleBadge="Empleado"
+          badgeColor="purple"
+          user={user}
+        />
 
-        {mensaje && (
-          <div className="mb-6 p-4 bg-emerald-900/60 border border-emerald-500/50 rounded-xl text-emerald-200 text-sm flex items-center gap-3">
-            <span>✅</span>
-            <span>{mensaje}</span>
-          </div>
-        )}
+        {/* Área Principal de Contenido */}
+        <main className="flex-1 p-4 lg:p-8 min-w-0 flex flex-col gap-6">
+          {/* Cabecera minimalista de sección */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800/90 p-5 rounded-2xl shadow-lg">
+            <div>
+              <h1 className="text-2xl font-black text-white tracking-tight">
+                {tab === 'productos' && 'Inventario de Computadores'}
+                {tab === 'servicios' && 'Servicios Técnicos Disponibles'}
+              </h1>
+              <p className="text-slate-400 text-xs mt-0.5">
+                {tab === 'productos' && 'Gestiona existencias, precios y disponibilidad de PCs.'}
+                {tab === 'servicios' && 'Actualiza tarifas y catálogo de soporte técnico.'}
+              </p>
+            </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-6">
-          <div className="flex gap-2">
-            {[
-              { id: 'productos', label: '💻 Inventario de PCs', count: productos.length },
-              { id: 'servicios', label: '🛠️ Servicios Técnicos', count: servicios.length },
-            ].map((t) => (
-              <button
-                key={t.id}
-                onClick={() => { setTab(t.id); setBusqueda(''); }}
-                className={`px-4 py-2 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
-                  tab === t.id ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30' : 'bg-slate-900 text-slate-400 hover:text-white'
-                }`}
-              >
-                <span>{t.label}</span>
-                <span className="bg-slate-800 px-2 py-0.5 rounded-full text-xs text-sky-300">{t.count}</span>
-              </button>
-            ))}
+            <div className="flex items-center gap-2">
+              <Button onClick={cargarDatos} variant="ghost" className="border border-slate-700/80 text-xs py-2 px-3">
+                🔄 Refrescar
+              </Button>
+              {tab === 'productos' ? (
+                <Button variant="primary" className="text-xs py-2 px-3.5 bg-purple-600 hover:bg-purple-500" onClick={() => setModalProd({ abierto: true, modo: 'crear', datos: null })}>
+                  + Agregar PC
+                </Button>
+              ) : (
+                <Button variant="primary" className="text-xs py-2 px-3.5 bg-purple-600 hover:bg-purple-500" onClick={() => setModalServ({ abierto: true, modo: 'crear', datos: null })}>
+                  + Agregar Servicio
+                </Button>
+              )}
+            </div>
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <input
-              type="text"
-              placeholder={`Buscar en ${tab}...`}
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              className="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-xl px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none w-full sm:w-64"
-            />
-            {tab === 'productos' ? (
-              <Button variant="primary" onClick={() => setModalProd({ abierto: true, modo: 'crear', datos: null })}>+ Agregar PC</Button>
-            ) : (
-              <Button variant="primary" onClick={() => setModalServ({ abierto: true, modo: 'crear', datos: null })}>+ Agregar Servicio</Button>
+          {mensaje && (
+            <div className="p-3.5 bg-emerald-900/50 border border-emerald-500/40 rounded-xl text-emerald-200 text-xs font-semibold flex items-center gap-2.5">
+              <span>✅</span>
+              <span>{mensaje}</span>
+            </div>
+          )}
+
+          {/* Tarjetas de Métricas */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className={`p-4 rounded-xl border transition-all ${tab === 'productos' ? 'bg-slate-900 border-purple-500/40' : 'bg-slate-900/50 border-slate-800'}`}>
+              <span className="text-xs text-slate-400 font-medium">Equipos en Catálogo</span>
+              <p className="text-2xl font-black text-white mt-0.5">{productos.length}</p>
+            </div>
+            <div className={`p-4 rounded-xl border transition-all ${tab === 'servicios' ? 'bg-slate-900 border-purple-500/40' : 'bg-slate-900/50 border-slate-800'}`}>
+              <span className="text-xs text-slate-400 font-medium">Servicios Registrados</span>
+              <p className="text-2xl font-black text-white mt-0.5">{servicios.length}</p>
+            </div>
+          </div>
+
+          {/* Barra de Filtro / Búsqueda */}
+          <div className="flex items-center justify-between gap-4">
+            <div className="relative flex-1 max-w-md">
+              <input
+                type="text"
+                placeholder={`Buscar en ${tab}...`}
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                className="w-full bg-slate-900/90 border border-slate-700/80 text-slate-200 text-xs rounded-xl pl-9 pr-4 py-2.5 focus:ring-2 focus:ring-purple-500 focus:outline-none placeholder:text-slate-500"
+              />
+              <span className="absolute left-3 top-2.5 text-xs text-slate-500">🔍</span>
+            </div>
+          </div>
+
+          {/* Tablas de Datos */}
+          <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-1 overflow-hidden shadow-xl">
+            {tab === 'productos' && (
+              <DataTable columns={prodCols} data={filtrados(productos, ['nombre', 'descripcion'])} keyField="id" />
+            )}
+
+            {tab === 'servicios' && (
+              <DataTable columns={servCols} data={filtrados(servicios, ['nombre', 'descripcion'])} keyField="id" />
             )}
           </div>
-        </div>
+        </main>
+      </div>
 
-        {tab === 'productos' && (
-          <DataTable columns={prodCols} data={filtrados(productos, ['nombre', 'descripcion'])} keyField="id" />
-        )}
-
-        {tab === 'servicios' && (
-          <DataTable columns={servCols} data={filtrados(servicios, ['nombre', 'descripcion'])} keyField="id" />
-        )}
-      </main>
 
       <Modal abierto={modalProd.abierto} onCerrar={() => setModalProd({ abierto: false, modo: 'crear', datos: null })} titulo={modalProd.modo === 'crear' ? 'Nuevo Producto' : 'Modificar Inventario'}>
         <form onSubmit={submitProd} className="flex flex-col gap-4">
