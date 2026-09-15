@@ -21,7 +21,13 @@ class RegisterRequest(BaseModel):
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+    code: str
+    new_password: str
+
 class LoginResponse(BaseModel):
     success: bool = True
     token: str
     usuario: UsuarioOut
+

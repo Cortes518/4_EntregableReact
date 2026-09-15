@@ -25,4 +25,16 @@ export const authService = {
       body: { email },
     });
   },
+
+  resetPassword: async (email, code, newPassword) => {
+    return apiRequest('/auth/reset-password', {
+      method: 'POST',
+      body: {
+        email,
+        code,
+        new_password: newPassword,
+      },
+    });
+  },
 };
+

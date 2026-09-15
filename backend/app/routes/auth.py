@@ -1,15 +1,29 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from datetime import datetime, timedelta, timezone
+import random
+
 from app.database import get_db
 from app.models.usuario import User
 from app.models.rol import Role
-from app.schemas.auth import LoginRequest, LoginResponse, RegisterRequest, ForgotPasswordRequest
+from app.schemas.auth import (
+    LoginRequest,
+    LoginResponse,
+    RegisterRequest,
+    ForgotPasswordRequest,
+    ResetPasswordRequest
+)
 from app.schemas.usuario import UsuarioOut
 from app.auth import verify_password, get_password_hash, create_access_token
 from app.dependencies import get_current_user
-import random
+from app.email import send_reset_code_email
 
 router = APIRouter()
+
+# Almacén en memoria de códigos de recuperación temporales
+# { "email": { "code": "123456", "expires_at": datetime, "user_id": int } }
+password_reset_codes = {}
+
 
 def serialize_user(user: User) -> dict:
     rol_nombre = user.rol.nombre if user.rol else "Cliente"
@@ -116,23 +130,87 @@ def forgot_password(data: ForgotPasswordRequest, db: Session = Depends(get_db)):
             detail="No existe una cuenta registrada con este correo electrónico"
         )
     
-    code = f"PC-{random.randint(10000, 99999)}"
+    # Generar código numérico aleatorio de 6 dígitos
+    code = f"{random.randint(100000, 999999)}"
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=15)
+
+    password_reset_codes[data.email.lower()] = {
+        "code": code,
+        "expires_at": expires_at,
+        "user_id": user.id_usuario
+    }
+
     nombre_completo = f"{user.nombres} {user.apellidos}".strip() or user.nombres
+
+    # Enviar correo electrónico real mediante SMTP
+    try:
+        send_reset_code_email(to_email=user.email, user_name=nombre_completo, code=code)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error inesperado al despachar el correo: {str(e)}"
+        )
 
     return {
         "success": True,
-        "message": f"Se ha generado el proceso ficticio de recuperación para {data.email}",
-        "correoFicticio": {
-            "remitente": "soporte@pcortes.com",
-            "expiraEn": "15 minutos",
-            "destinatario": user.email,
-            "nombreUsuario": nombre_completo,
-            "asunto": "Recuperación de Contraseña - Plataforma PCortes",
-            "pasos": [
-                "1. Copia el Código de Seguridad Temporal simulado.",
-                "2. Haz clic en 'Simular Restablecimiento y Volver'.",
-                "3. Inicia sesión con tus credenciales en la plataforma."
-            ],
-            "codigoSeguridad": code
-        }
+        "message": f"Código de verificación enviado exitosamente a {data.email}. Por favor revisa tu bandeja de entrada o spam.",
+        "email": user.email
     }
+
+@router.post("/reset-password")
+def reset_password(data: ResetPasswordRequest, db: Session = Depends(get_db)):
+    email_key = data.email.lower()
+    reset_entry = password_reset_codes.get(email_key)
+
+    if not reset_entry:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No hay una solicitud de recuperación activa para este correo o el código ya fue utilizado."
+        )
+
+    # Verificar expiración del código (15 minutos)
+    if datetime.now(timezone.utc) > reset_entry["expires_at"]:
+        password_reset_codes.pop(email_key, None)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El código de verificación ha expirado. Por favor solicita uno nuevo."
+        )
+
+    # Verificar coincidencia del código
+    if reset_entry["code"].strip() != data.code.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El código de verificación ingresado es incorrecto."
+        )
+
+    if len(data.new_password) < 8:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La nueva contraseña debe tener al menos 8 caracteres."
+        )
+
+    user = db.query(User).filter(User.id_usuario == reset_entry["user_id"]).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado."
+        )
+
+    # Hashear nueva contraseña con bcrypt y actualizar en MySQL
+    user.password = get_password_hash(data.new_password)
+    db.commit()
+    db.refresh(user)
+
+    # Eliminar código temporal para evitar reuso
+    password_reset_codes.pop(email_key, None)
+
+    return {
+        "success": True,
+        "message": "¡Tu contraseña ha sido actualizada exitosamente! Ya puedes iniciar sesión con tu nueva contraseña."
+    }
+
