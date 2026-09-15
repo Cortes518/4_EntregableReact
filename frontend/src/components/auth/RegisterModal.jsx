@@ -21,12 +21,12 @@ function validar(form) {
   if (!form.nombre.trim()) err.nombre = 'El nombre es obligatorio.';
   else if (!soloLetras.test(form.nombre)) err.nombre = 'Solo se permiten letras.';
   else if (form.nombre.trim().length < 2) err.nombre = 'Mínimo 2 caracteres.';
-  else if (form.nombre.trim().length > 30) err.nombre = 'Máximo 30 caracteres.';
+  else if (form.nombre.trim().length > 40) err.nombre = 'Máximo 40 caracteres.';
 
   if (!form.apellido.trim()) err.apellido = 'El apellido es obligatorio.';
   else if (!soloLetras.test(form.apellido)) err.apellido = 'Solo se permiten letras.';
   else if (form.apellido.trim().length < 2) err.apellido = 'Mínimo 2 caracteres.';
-  else if (form.apellido.trim().length > 30) err.apellido = 'Máximo 30 caracteres.';
+  else if (form.apellido.trim().length > 40) err.apellido = 'Máximo 40 caracteres.';
 
   if (!form.tipoDoc) err.tipoDoc = 'Selecciona un tipo de documento.';
 
@@ -35,24 +35,25 @@ function validar(form) {
 
   if (!form.direccion.trim()) err.direccion = 'La dirección es obligatoria.';
   else if (form.direccion.trim().length < 5) err.direccion = 'Mínimo 5 caracteres.';
-  else if (form.direccion.trim().length > 30) err.direccion = 'Máximo 30 caracteres.';
+  else if (form.direccion.trim().length > 40) err.direccion = 'Máximo 40 caracteres.';
 
   if (!form.telefono) err.telefono = 'El teléfono es obligatorio.';
   else if (!telefonoRegex.test(form.telefono)) err.telefono = 'Debe tener entre 7 y 10 dígitos numéricos.';
 
   if (!form.email) err.email = 'El correo es obligatorio.';
   else if (!emailRegex.test(form.email)) err.email = 'Formato de correo inválido.';
-  else if (form.email.length > 30) err.email = 'Máximo 30 caracteres.';
+  else if (form.email.length > 40) err.email = 'Máximo 40 caracteres.';
 
   if (!form.password) err.password = 'La contraseña es obligatoria.';
   else if (form.password.length < 8) err.password = 'Mínimo 8 caracteres.';
-  else if (form.password.length > 30) err.password = 'Máximo 30 caracteres.';
+  else if (form.password.length > 40) err.password = 'Máximo 40 caracteres.';
 
   if (!form.confirmar) err.confirmar = 'Debes confirmar la contraseña.';
   else if (form.password !== form.confirmar) err.confirmar = 'Las contraseñas no coinciden.';
 
   return err;
 }
+
 
 const VACIO = {
   nombre: '',
@@ -189,9 +190,9 @@ export default function RegisterModal({ onCerrar }) {
               onChange={handleChange}
               onBlur={handleBlur}
               error={errores.nombre}
-              helperText="Máx. 30 caracteres (solo letras)"
+              helperText="Máx. 40 caracteres (solo letras)"
               required
-              maxLength={30}
+              maxLength={40}
             />
             <Input
               id="apellido"
@@ -200,9 +201,9 @@ export default function RegisterModal({ onCerrar }) {
               onChange={handleChange}
               onBlur={handleBlur}
               error={errores.apellido}
-              helperText="Máx. 30 caracteres (solo letras)"
+              helperText="Máx. 40 caracteres (solo letras)"
               required
-              maxLength={30}
+              maxLength={40}
             />
 
             <Select
@@ -236,9 +237,9 @@ export default function RegisterModal({ onCerrar }) {
               onChange={handleChange}
               onBlur={handleBlur}
               error={errores.direccion}
-              helperText="Máx. 30 caracteres"
+              helperText="Máx. 40 caracteres"
               required
-              maxLength={30}
+              maxLength={40}
               className="sm:col-span-2"
               placeholder="Ej: Calle 45 # 12-34"
             />
@@ -262,9 +263,9 @@ export default function RegisterModal({ onCerrar }) {
               onChange={handleChange}
               onBlur={handleBlur}
               error={errores.email}
-              helperText="Máx. 30 caracteres"
+              helperText="Máx. 40 caracteres"
               required
-              maxLength={30}
+              maxLength={40}
               placeholder="usuario@correo.com"
             />
             <Input
@@ -275,9 +276,9 @@ export default function RegisterModal({ onCerrar }) {
               onChange={handleChange}
               onBlur={handleBlur}
               error={errores.password}
-              helperText="Entre 8 y 30 caracteres"
+              helperText="Entre 8 y 40 caracteres"
               required
-              maxLength={30}
+              maxLength={40}
               placeholder="Mínimo 8 caracteres"
             />
             <Input
@@ -290,9 +291,10 @@ export default function RegisterModal({ onCerrar }) {
               error={errores.confirmar}
               helperText="Debe coincidir con la contraseña"
               required
-              maxLength={30}
+              maxLength={40}
               placeholder="Repite tu contraseña"
             />
+
 
             <div className="sm:col-span-2 flex justify-end gap-3 mt-4">
               <Button type="button" variant="ghost" onClick={onCerrar} disabled={cargando}>Cancelar</Button>
