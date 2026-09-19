@@ -15,16 +15,16 @@ if raw_db_url and "://" in raw_db_url and not raw_db_url.startswith("sqlite"):
         DATABASE_URL = raw_db_url.replace("mysql://", "mysql+pymysql://", 1)
     else:
         DATABASE_URL = raw_db_url
-    DB_NAME = os.getenv("MYSQLDATABASE", os.getenv("DB_NAME", "proyecto_react"))
-    DB_HOST = os.getenv("MYSQLHOST", os.getenv("DB_HOST", "localhost"))
-    DB_PORT = os.getenv("MYSQLPORT", os.getenv("DB_PORT", "3306"))
+    DB_NAME = os.getenv("MYSQL_DATABASE") or os.getenv("MYSQLDATABASE") or os.getenv("DB_NAME", "proyecto_react")
+    DB_HOST = os.getenv("MYSQL_HOST") or os.getenv("MYSQLHOST") or os.getenv("DB_HOST", "localhost")
+    DB_PORT = os.getenv("MYSQL_PORT") or os.getenv("MYSQLPORT") or os.getenv("DB_PORT", "3306")
 else:
     # Variables de entorno individuales según la guía del instructor (o Railway MYSQLHOST/PORT/USER/PASSWORD)
-    DB_HOST = os.getenv("MYSQLHOST") or os.getenv("DB_HOST", "localhost")
-    DB_PORT = os.getenv("MYSQLPORT") or os.getenv("DB_PORT", "3306")
-    DB_NAME = os.getenv("MYSQLDATABASE") or os.getenv("DB_NAME", "proyecto_react")
-    DB_USER = os.getenv("MYSQLUSER") or os.getenv("DB_USER", "root")
-    DB_PASSWORD = os.getenv("MYSQLPASSWORD") or os.getenv("DB_PASSWORD", "")
+    DB_HOST = os.getenv("MYSQL_HOST") or os.getenv("MYSQLHOST") or os.getenv("DB_HOST", "localhost")
+    DB_PORT = os.getenv("MYSQL_PORT") or os.getenv("MYSQLPORT") or os.getenv("DB_PORT", "3306")
+    DB_NAME = os.getenv("MYSQL_DATABASE") or os.getenv("MYSQLDATABASE") or os.getenv("DB_NAME", "proyecto_react")
+    DB_USER = os.getenv("MYSQL_USER") or os.getenv("MYSQLUSER") or os.getenv("DB_USER", "root")
+    DB_PASSWORD = os.getenv("MYSQL_PASSWORD") or os.getenv("MYSQLPASSWORD") or os.getenv("DB_PASSWORD", "")
     DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
