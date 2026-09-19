@@ -11,4 +11,8 @@ export default defineConfig({
   optimizeDeps: {
     include: ['react-is', 'recharts'],
   },
+  preview: {
+    allowedHosts: true,
+    host: true,
+  },
 });
