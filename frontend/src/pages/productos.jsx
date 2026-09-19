@@ -62,7 +62,7 @@ export default function ProductosPage() {
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-10 flex flex-col gap-8">
         {/* Encabezado */}
-        <section className="text-center">
+        <section className="text-center animate-blur-in">
           <h1 className="text-4xl font-bold text-white mb-3">Nuestros Productos y PCs de Alto Rendimiento</h1>
           <p className="text-slate-400 text-lg max-w-2xl mx-auto">
             Explora nuestra línea de equipos ensamblados para gaming competitivo, renderizado profesional y streaming.
@@ -82,14 +82,15 @@ export default function ProductosPage() {
               return (
                 <div
                   key={prod.id}
-                  className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden hover:border-sky-500 hover:-translate-y-1 transition-all duration-300 flex flex-col shadow-xl"
+                  className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden flex flex-col shadow-xl card-hover animate-fade-in-up"
+                  style={{ animationDelay: `${0.05 + index * 0.07}s`, opacity: 0 }}
                 >
                   {/* Imagen del producto */}
                   <div className="relative h-48 overflow-hidden bg-slate-950">
                     <img
                       src={prod.src || imagenFallback}
                       alt={prod.nombre || prod.titulo}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover img-zoom"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent" />
                     <span className="absolute top-3 left-3 bg-sky-600 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow">

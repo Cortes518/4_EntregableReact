@@ -28,7 +28,7 @@ export default function IndexPage() {
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-10 flex flex-col gap-14">
         {/* Hero */}
-        <section className="text-center">
+        <section className="text-center animate-blur-in">
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
             Bienvenido a <span className="text-sky-400">PCortes</span>
           </h1>
@@ -52,7 +52,7 @@ export default function IndexPage() {
         </section>
 
         {/* Carrusel de Productos */}
-        <section>
+        <section className="animate-section-reveal stagger-1">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold text-white">PCs Destacadas</h2>
             <Link to="/productos" className="text-sm text-sky-400 hover:text-sky-300 font-semibold">
@@ -63,7 +63,7 @@ export default function IndexPage() {
         </section>
 
         {/* Sección de Servicios Técnicos */}
-        <section className="bg-slate-950/60 border border-slate-800 rounded-3xl p-8 shadow-2xl">
+        <section className="bg-slate-950/60 border border-slate-800 rounded-3xl p-8 shadow-2xl animate-section-reveal stagger-2">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
               <span className="bg-sky-500/10 text-sky-400 text-xs font-bold px-3 py-1 rounded-full border border-sky-500/20 uppercase tracking-wide">
@@ -88,10 +88,11 @@ export default function IndexPage() {
               { id: 2, nombre: 'Ensamble de PC', descripcion: 'Gestión de cables oculta y pruebas de estrés.', precio: 180000 },
               { id: 3, nombre: 'Optimización de Software', descripcion: 'Instalación de SO, drivers y antivirus.', precio: 90000 },
               { id: 4, nombre: 'Diagnóstico de Hardware', descripcion: 'Revisión técnica de componentes.', precio: 80000 },
-            ]).map((serv) => (
+            ]).map((serv, index) => (
               <div
                 key={serv.id}
-                className="bg-slate-900 border border-slate-800 hover:border-sky-500/50 p-5 rounded-2xl transition-all flex flex-col justify-between"
+                className="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between card-hover animate-fade-in-up"
+                style={{ animationDelay: `${0.1 + index * 0.07}s`, opacity: 0 }}
               >
                 <div>
                   <h3 className="text-white font-bold text-base mb-2">{serv.nombre}</h3>
@@ -116,13 +117,13 @@ export default function IndexPage() {
         </section>
 
         {/* Cards de características */}
-        <section className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <section className="grid grid-cols-1 sm:grid-cols-3 gap-6 animate-section-reveal stagger-3">
           {[
             { titulo: 'Alto Rendimiento', desc: 'Componentes de última generación ensamblados con precisión para el máximo desempeño.' },
             { titulo: 'Garantía Incluida', desc: 'Todas nuestras PCs incluyen garantía y soporte técnico especializado.' },
             { titulo: 'Envío a Todo el País', desc: 'Despacho seguro y rápido a cualquier ciudad de Colombia.' },
-          ].map(({ titulo, desc }) => (
-            <div key={titulo} className="bg-slate-800 border border-slate-700 rounded-xl p-6 hover:border-sky-500 transition-all">
+          ].map(({ titulo, desc }, i) => (
+            <div key={titulo} className="bg-slate-800 border border-slate-700 rounded-xl p-6 card-hover animate-fade-in-up" style={{ animationDelay: `${0.15 + i * 0.1}s`, opacity: 0 }}>
               <h3 className="text-white font-semibold text-lg mb-2">{titulo}</h3>
               <p className="text-slate-400 text-sm">{desc}</p>
             </div>

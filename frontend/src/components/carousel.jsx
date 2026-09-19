@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 import imgGaming    from '../assets/images/prod_gaming.jpg';
 import imgWork      from '../assets/images/prod_workstation.jpg';
@@ -25,28 +25,43 @@ export const productos = [
 
 export default function Carousel() {
   const [index, setIndex] = useState(0);
+  const pausedRef = useRef(false);
+  const intervalRef = useRef(null);
 
-  const anterior = () => {
-    setIndex(index === 0 ? productos.length - 1 : index - 1);
-  };
+  const siguiente = useCallback(() => {
+    setIndex((prev) => (prev === productos.length - 1 ? 0 : prev + 1));
+  }, []);
 
-  const siguiente = () => {
-    setIndex(index === productos.length - 1 ? 0 : index + 1);
-  };
+  const anterior = useCallback(() => {
+    setIndex((prev) => (prev === 0 ? productos.length - 1 : prev - 1));
+  }, []);
+
+  // Auto-play con pausa al hacer hover
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      if (!pausedRef.current) siguiente();
+    }, 5000);
+    return () => clearInterval(intervalRef.current);
+  }, [siguiente]);
 
   const item = productos[index];
 
   return (
-    <div className="relative w-full max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl bg-slate-800">
-      {/* Imagen */}
+    <div
+      className="relative w-full max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl bg-slate-800"
+      onMouseEnter={() => (pausedRef.current = true)}
+      onMouseLeave={() => (pausedRef.current = false)}
+    >
+      {/* Imagen con crossfade */}
       <img
+        key={index}
         src={item.src}
         alt={item.titulo}
-        className="w-full h-72 sm:h-96 object-cover"
+        className="w-full h-72 sm:h-96 object-cover animate-crossfade"
       />
 
       {/* Overlay con título y descripción */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/85 to-transparent px-6 py-5">
+      <div key={`txt-${index}`} className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/85 to-transparent px-6 py-5 animate-crossfade">
         <p className="text-xs text-sky-400 font-semibold mb-1 uppercase tracking-widest">
           {index + 1} / {productos.length}
         </p>
@@ -58,7 +73,7 @@ export default function Carousel() {
       <button
         type="button"
         onClick={anterior}
-        className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-sky-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-2xl transition-all"
+        className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-sky-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-2xl transition-all btn-press"
         aria-label="Anterior"
       >
         ‹
@@ -68,7 +83,7 @@ export default function Carousel() {
       <button
         type="button"
         onClick={siguiente}
-        className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-sky-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-2xl transition-all"
+        className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-sky-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-2xl transition-all btn-press"
         aria-label="Siguiente"
       >
         ›
@@ -83,10 +98,21 @@ export default function Carousel() {
             onClick={() => setIndex(i)}
             aria-label={`Ir a imagen ${i + 1}`}
             className={`rounded-full transition-all ${
-              i === index ? 'bg-sky-500 w-5 h-2' : 'bg-white/40 w-2 h-2'
+              i === index ? 'bg-sky-500 w-5 h-2' : 'bg-white/40 w-2 h-2 hover:bg-white/70'
             }`}
           />
         ))}
+      </div>
+
+      {/* Barra de progreso auto-play */}
+      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-700/50">
+        <div
+          key={`progress-${index}`}
+          className="h-full bg-sky-500/60 rounded-full"
+          style={{
+            animation: pausedRef.current ? 'none' : 'progressBar 5s linear forwards',
+          }}
+        />
       </div>
     </div>
   );

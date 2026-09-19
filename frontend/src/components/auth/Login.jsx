@@ -81,8 +81,8 @@ export default function Login() {
   return (
     <>
       <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
-        <div className="w-full max-w-md bg-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700">
-          <h1 className="text-2xl font-bold text-white mb-1">Iniciar sesión</h1>
+        <div className="w-full max-w-md bg-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700 animate-scale-in">
+          <h1 className="text-2xl font-bold text-white mb-1 animate-blur-in">Iniciar sesión</h1>
           <p className="text-slate-400 text-sm mb-6">Bienvenido de vuelta. Ingresa tus datos para continuar.</p>
 
           {errorServidor && (

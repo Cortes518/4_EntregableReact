@@ -3,7 +3,7 @@ import logo from '../assets/images/logo.jpg';
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-950 border-t border-slate-700 py-6 mt-auto">
+    <footer className="bg-slate-950 border-t border-slate-700 py-6 mt-auto animate-fade-in">
       <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-2">
           <img src={logo} alt="PCortes" className="w-8 h-8 rounded-full object-cover" />

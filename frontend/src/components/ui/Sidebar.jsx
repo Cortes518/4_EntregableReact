@@ -85,7 +85,7 @@ export default function Sidebar({
                 key={item.id}
                 onClick={() => onSelectTab(item.id)}
                 type="button"
-                className={`flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold border transition-all whitespace-nowrap lg:whitespace-normal w-full text-left ${
+                className={`flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold border transition-all whitespace-nowrap lg:whitespace-normal w-full text-left btn-press ${
                   isActive
                     ? `${getActiveItemClasses()} font-bold`
                     : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'

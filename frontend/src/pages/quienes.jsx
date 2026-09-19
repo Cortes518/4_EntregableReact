@@ -8,7 +8,7 @@ export default function QuienesPage() {
       <Header />
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-10 flex flex-col gap-10">
-        <section className="text-center">
+        <section className="text-center animate-blur-in">
           <h1 className="text-4xl font-bold text-white mb-3">Quiénes Somos</h1>
           <p className="text-slate-400 text-lg max-w-2xl mx-auto">
             Somos PCortes, una empresa colombiana especializada en la venta y ensamble de PCs de alto rendimiento.
@@ -17,12 +17,12 @@ export default function QuienesPage() {
 
         <Carousel />
 
-        <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <section className="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-section-reveal stagger-1">
           {[
             { titulo: 'Nuestra Misión', desc: 'Ofrecer la mejor tecnología en equipos de cómputo, brindando calidad, garantía y soporte técnico a nuestros clientes.' },
             { titulo: 'Nuestra Visión', desc: 'Convertirnos en la tienda #1 de PCs ensambladas en Colombia, reconocidos por nuestro servicio y rendimiento.' },
-          ].map(({ titulo, desc }) => (
-            <div key={titulo} className="bg-slate-800 border border-slate-700 rounded-xl p-6 hover:border-sky-500 transition-all">
+          ].map(({ titulo, desc }, i) => (
+            <div key={titulo} className="bg-slate-800 border border-slate-700 rounded-xl p-6 card-hover animate-fade-in-up" style={{ animationDelay: `${0.1 + i * 0.1}s`, opacity: 0 }}>
               <h3 className="text-white font-semibold text-lg mb-2">{titulo}</h3>
               <p className="text-slate-400 text-sm">{desc}</p>
             </div>

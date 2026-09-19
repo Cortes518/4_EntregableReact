@@ -68,7 +68,7 @@ export default function ServiciosPage() {
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-10 flex flex-col gap-10">
         {/* Encabezado */}
-        <section className="text-center">
+        <section className="text-center animate-blur-in">
           <span className="bg-sky-500/10 text-sky-400 text-xs font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider border border-sky-500/20 mb-3 inline-block">
             Soporte Especializado
           </span>
@@ -86,10 +86,11 @@ export default function ServiciosPage() {
         ) : (
           /* Grid de servicios */
           <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {servicios.map((serv) => (
+            {servicios.map((serv, index) => (
               <div
                 key={serv.id}
-                className="bg-slate-800 border border-slate-700 hover:border-sky-500 rounded-2xl p-6 transition-all duration-300 flex flex-col justify-between shadow-xl"
+                className="bg-slate-800 border border-slate-700 rounded-2xl p-6 flex flex-col justify-between shadow-xl card-hover animate-fade-in-up"
+                style={{ animationDelay: `${0.05 + index * 0.08}s`, opacity: 0 }}
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-3">
