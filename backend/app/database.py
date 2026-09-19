@@ -6,15 +6,25 @@ from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
 
-# Variables de entorno individuales según la guía del instructor
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = os.getenv("DB_PORT", "3306")
-DB_NAME = os.getenv("DB_NAME", "proyecto_react")
-DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "")
-
-# Construcción de la URL de conexión a MySQL con PyMySQL
-DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+# Resolver URL de base de datos para entorno local o nube (Railway / Docker)
+raw_db_url = os.getenv("MYSQL_URL") or os.getenv("DATABASE_URL")
+if raw_db_url and not raw_db_url.startswith("sqlite"):
+    # Normalizar esquema para compatibilidad con PyMySQL
+    if raw_db_url.startswith("mysql://"):
+        DATABASE_URL = raw_db_url.replace("mysql://", "mysql+pymysql://", 1)
+    else:
+        DATABASE_URL = raw_db_url
+    DB_NAME = os.getenv("MYSQLDATABASE", os.getenv("DB_NAME", "proyecto_react"))
+    DB_HOST = os.getenv("MYSQLHOST", os.getenv("DB_HOST", "localhost"))
+    DB_PORT = os.getenv("MYSQLPORT", os.getenv("DB_PORT", "3306"))
+else:
+    # Variables de entorno individuales según la guía del instructor
+    DB_HOST = os.getenv("MYSQLHOST") or os.getenv("DB_HOST", "localhost")
+    DB_PORT = os.getenv("MYSQLPORT") or os.getenv("DB_PORT", "3306")
+    DB_NAME = os.getenv("MYSQLDATABASE") or os.getenv("DB_NAME", "proyecto_react")
+    DB_USER = os.getenv("MYSQLUSER") or os.getenv("DB_USER", "root")
+    DB_PASSWORD = os.getenv("MYSQLPASSWORD") or os.getenv("DB_PASSWORD", "")
+    DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 SQLITE_DB_PATH = os.path.join(BASE_DIR, "basedatos", "database.db")

@@ -1,15 +1,27 @@
-import { useState } from 'react';
-import Header from '../../components/header';
-import Footer from '../../components/footer';
+import { useState, useEffect } from 'react';
 import Sidebar from '../../components/ui/Sidebar';
 import { useAuth } from '../../context/AuthContext';
 import { userService } from '../../services/userService';
+import { saleService } from '../../services/saleService';
+import { statsService } from '../../services/statsService';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
+import InvoiceModal from '../../components/sales/InvoiceModal';
+import PQRView from '../../components/dashboard/PQRView';
+import { generarFacturaPDF } from '../../utils/pdfGenerator';
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+} from 'recharts';
 
 export default function ClienteDashboard() {
   const { user, actualizarUsuarioLocal } = useAuth();
-  const [tab, setTab] = useState('perfil'); // 'perfil' | 'seguridad' | 'soporte'
+  const [tab, setTab] = useState('resumen'); // 'resumen' | 'mis_compras' | 'pqr' | 'perfil' | 'seguridad' | 'soporte'
+
+  const [compras, setCompras] = useState([]);
+  const [cargandoCompras, setCargandoCompras] = useState(false);
+  const [facturaSeleccionada, setFacturaSeleccionada] = useState(null);
+  const [stats, setStats] = useState(null);
+  const [cargandoStats, setCargandoStats] = useState(false);
 
   const [editando, setEditando] = useState(false);
   const [form, setForm] = useState({
@@ -21,6 +33,22 @@ export default function ClienteDashboard() {
   const [cargando, setCargando] = useState(false);
   const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    // Cargar compras del cliente
+    setCargandoCompras(true);
+    saleService.getMyPurchases()
+      .then((data) => setCompras(Array.isArray(data) ? data : []))
+      .catch(() => setCompras([]))
+      .finally(() => setCargandoCompras(false));
+
+    // Cargar estadísticas personales del cliente
+    setCargandoStats(true);
+    statsService.getMyStats()
+      .then((data) => setStats(data))
+      .catch((err) => console.error('Error al cargar stats cliente:', err))
+      .finally(() => setCargandoStats(false));
+  }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.id]: e.target.value });
@@ -48,41 +76,47 @@ export default function ClienteDashboard() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100">
-      <Header />
+    <div className="flex flex-col lg:flex-row min-h-screen bg-slate-950 text-slate-100">
+      {/* Barra Lateral Minimalista */}
+      <Sidebar
+        items={[
+          { id: 'resumen', label: 'Mi Resumen', icon: '📊' },
+          { id: 'mis_compras', label: 'Mis Compras', icon: '🛒', count: compras.length },
+          { id: 'pqr', label: 'Mis PQR', icon: '📩', count: stats?.pqr_pendientes || 0 },
+          { id: 'perfil', label: 'Mi Perfil & Datos', icon: '👤' },
+          { id: 'seguridad', label: 'Estado de Cuenta', icon: '🛡️' },
+          { id: 'soporte', label: 'Soporte Técnico', icon: '💬' },
+        ]}
+        activeTab={tab}
+        onSelectTab={(newTab) => setTab(newTab)}
+        roleTitle="Mi Portal"
+        roleBadge="Cliente"
+        badgeColor="emerald"
+        user={user}
+      />
 
-      <div className="flex-1 flex flex-col lg:flex-row w-full max-w-7xl mx-auto">
-        {/* Barra Lateral Minimalista */}
-        <Sidebar
-          items={[
-            { id: 'perfil', label: 'Mi Perfil & Datos', icon: '👤' },
-            { id: 'seguridad', label: 'Estado de Cuenta', icon: '🛡️' },
-            { id: 'soporte', label: 'Soporte Técnico', icon: '💬' },
-          ]}
-          activeTab={tab}
-          onSelectTab={(newTab) => setTab(newTab)}
-          roleTitle="Mi Portal"
-          roleBadge="Cliente"
-          badgeColor="emerald"
-          user={user}
-        />
-
-        {/* Área Principal de Contenido */}
-        <main className="flex-1 p-4 lg:p-8 min-w-0 flex flex-col gap-6">
-          {/* Cabecera minimalista de sección */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800/90 p-5 rounded-2xl shadow-lg">
-            <div>
-              <h1 className="text-2xl font-black text-white tracking-tight">
-                {tab === 'perfil' && 'Información de Perfil'}
-                {tab === 'seguridad' && 'Estado y Documentación'}
-                {tab === 'soporte' && 'Atención y Soporte Técnico'}
-              </h1>
-              <p className="text-slate-400 text-xs mt-0.5">
-                {tab === 'perfil' && 'Actualiza tus nombres, teléfono y dirección de entrega.'}
-                {tab === 'seguridad' && 'Detalles de registro y nivel de seguridad de tu cuenta.'}
-                {tab === 'soporte' && 'Canales directos de asesoría técnica y cotizaciones de PCs.'}
-              </p>
-            </div>
+      {/* Área Principal de Contenido */}
+      <main className="flex-1 p-4 lg:p-8 min-w-0 flex flex-col gap-6">
+        {/* Cabecera minimalista de sección */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800/90 p-5 rounded-2xl shadow-lg">
+          <div>
+            <h1 className="text-2xl font-black text-white tracking-tight">
+              {tab === 'resumen' && 'Resumen de Mi Cuenta'}
+              {tab === 'mis_compras' && 'Historial de Compras y Facturas'}
+              {tab === 'pqr' && 'Mis Solicitudes PQR'}
+              {tab === 'perfil' && 'Información de Perfil'}
+              {tab === 'seguridad' && 'Estado y Documentación'}
+              {tab === 'soporte' && 'Atención y Soporte Técnico'}
+            </h1>
+            <p className="text-slate-400 text-xs mt-0.5">
+              {tab === 'resumen' && `Bienvenido, ${user?.nombres}. Aquí puedes ver tu actividad y compras recientes.`}
+              {tab === 'mis_compras' && 'Revisa tus pedidos, comprobantes de pago y descarga facturas en PDF.'}
+              {tab === 'pqr' && 'Radica peticiones, quejas, reclamos o sugerencias y consulta respuestas.'}
+              {tab === 'perfil' && 'Actualiza tus nombres, teléfono y dirección de entrega.'}
+              {tab === 'seguridad' && 'Detalles de registro y nivel de seguridad de tu cuenta.'}
+              {tab === 'soporte' && 'Canales directos de asesoría técnica y cotizaciones de PCs.'}
+            </p>
+          </div>
 
             {tab === 'perfil' && (
               <button
@@ -106,6 +140,126 @@ export default function ClienteDashboard() {
               <span>⚠️</span>
               <span>{error}</span>
             </div>
+          )}
+
+          {/* SECCIÓN: MI RESUMEN (DASHBOARD CLIENTE) */}
+          {tab === 'resumen' && (
+            <div className="flex flex-col gap-6 animate-fade-in">
+              {/* Tarjetas KPI Cliente */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="card-hover bg-slate-900/80 border border-slate-800/80 p-5 rounded-2xl shadow-lg flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-slate-400 font-medium">Compras Realizadas</span>
+                    <span className="p-2 bg-sky-500/10 text-sky-400 rounded-xl text-base">🛒</span>
+                  </div>
+                  <div className="mt-3">
+                    <p className="text-3xl font-black text-white">{stats?.total_compras ?? compras.length}</p>
+                    <p className="text-[11px] text-slate-400 mt-1">Órdenes registradas</p>
+                  </div>
+                </div>
+
+                <div className="card-hover bg-slate-900/80 border border-slate-800/80 p-5 rounded-2xl shadow-lg flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-slate-400 font-medium">Gasto Total Acumulado</span>
+                    <span className="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl text-base">💰</span>
+                  </div>
+                  <div className="mt-3">
+                    <p className="text-3xl font-black text-white">
+                      ${Number(stats?.gasto_total ?? 0).toLocaleString('es-CO')}
+                    </p>
+                    <p className="text-[11px] text-emerald-400 font-semibold mt-1">Facturado en compras completadas</p>
+                  </div>
+                </div>
+
+                <div className="card-hover bg-slate-900/80 border border-slate-800/80 p-5 rounded-2xl shadow-lg flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-slate-400 font-medium">Mis Solicitudes PQR</span>
+                    <span className="p-2 bg-amber-500/10 text-amber-400 rounded-xl text-base">📩</span>
+                  </div>
+                  <div className="mt-3">
+                    <p className="text-3xl font-black text-white">{stats?.mis_pqrs ?? 0}</p>
+                    <p className={`text-[11px] font-semibold mt-1 ${(stats?.pqr_pendientes ?? 0) > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                      {(stats?.pqr_pendientes ?? 0) > 0 ? `⏳ ${stats.pqr_pendientes} en trámite` : '✅ Sin trámites pendientes'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Gráfico de Gastos Mensuales */}
+              {stats?.gastos_mensuales?.labels?.length > 0 && (
+                <div className="bg-slate-900/80 border border-slate-800/80 p-5 rounded-2xl shadow-lg">
+                  <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                    <span>📈</span>
+                    <span>Historial de Gastos por Mes</span>
+                  </h3>
+                  <ResponsiveContainer width="100%" height={260}>
+                    <LineChart
+                      data={stats.gastos_mensuales.labels.map((lbl, idx) => ({
+                        mes: lbl,
+                        total: stats.gastos_mensuales.valores[idx],
+                      }))}
+                      margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                      <XAxis dataKey="mes" tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                      <YAxis
+                        tick={{ fill: '#94a3b8', fontSize: 10 }}
+                        tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+                      />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', borderRadius: '0.75rem', color: '#fff', fontSize: '12px' }}
+                        formatter={(val) => [`$${Number(val).toLocaleString('es-CO')}`, 'Total']}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="total"
+                        name="Total Gastado"
+                        stroke="#10b981"
+                        strokeWidth={2.5}
+                        dot={{ fill: '#10b981', r: 4 }}
+                        activeDot={{ r: 6 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+
+              {/* Acciones Rápidas del Cliente */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button
+                  onClick={() => setTab('mis_compras')}
+                  className="flex items-center justify-between p-4 bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 rounded-2xl transition-all text-left shadow-lg group cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="p-2.5 bg-sky-500/10 text-sky-400 rounded-xl text-lg">🛒</span>
+                    <div>
+                      <p className="font-bold text-white text-xs">Historial de Compras</p>
+                      <p className="text-[11px] text-slate-400">Ver comprobantes y descargar facturas PDF</p>
+                    </div>
+                  </div>
+                  <span className="text-sky-400 text-sm group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+
+                <button
+                  onClick={() => setTab('pqr')}
+                  className="flex items-center justify-between p-4 bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 rounded-2xl transition-all text-left shadow-lg group cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="p-2.5 bg-amber-500/10 text-amber-400 rounded-xl text-lg">📩</span>
+                    <div>
+                      <p className="font-bold text-white text-xs">Radicar o Consultar PQR</p>
+                      <p className="text-[11px] text-slate-400">Envía peticiones, reclamos y mira respuestas</p>
+                    </div>
+                  </div>
+                  <span className="text-amber-400 text-sm group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* SECCIÓN: MIS PQR */}
+          {tab === 'pqr' && (
+            <PQRView rolUsuario="cliente" />
           )}
 
           {/* SECCIÓN 1: MI PERFIL */}
@@ -223,6 +377,85 @@ export default function ClienteDashboard() {
             </div>
           )}
 
+          {/* SECCIÓN: MIS COMPRAS */}
+          {tab === 'mis_compras' && (
+            <div className="flex flex-col gap-4">
+              {cargandoCompras ? (
+                <div className="p-12 text-center text-slate-400">
+                  <div className="inline-block animate-spin text-2xl mb-2">⏳</div>
+                  <p className="text-sm">Cargando tu historial de compras...</p>
+                </div>
+              ) : compras.length === 0 ? (
+                <div className="bg-slate-900/80 border border-slate-800 p-12 rounded-2xl text-center text-slate-400">
+                  <span className="text-4xl block mb-3">🛒</span>
+                  <p className="text-base font-bold text-slate-300">Aún no tienes compras registradas</p>
+                  <p className="text-xs text-slate-500 mt-1">Explora nuestro catálogo de productos y servicios desde el sitio web.</p>
+                </div>
+              ) : (
+                <div className="bg-slate-900/60 rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+                  <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/80">
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">📋 Tus Facturas</h3>
+                    <span className="text-xs text-slate-400">{compras.length} compra(s)</span>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-slate-800/80 text-slate-300 border-b border-slate-700">
+                          <th className="py-3 px-4">N° Factura</th>
+                          <th className="py-3 px-4">Fecha</th>
+                          <th className="py-3 px-4">Ítems</th>
+                          <th className="py-3 px-4">Método</th>
+                          <th className="py-3 px-4 text-center">Estado</th>
+                          <th className="py-3 px-4 text-right">Total</th>
+                          <th className="py-3 px-4 text-center">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800/60">
+                        {compras.map((v) => (
+                          <tr key={v.id_venta} className="hover:bg-slate-800/40 transition-colors">
+                            <td className="py-3 px-4 font-mono font-bold text-sky-400">{v.numero_factura}</td>
+                            <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">
+                              {v.fecha_hora ? new Date(v.fecha_hora).toLocaleString('es-CO') : '--'}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="text-slate-300">{(v.detalles || []).length} ítem(s)</span>
+                              <div className="text-[10px] text-slate-500 truncate max-w-[200px]">
+                                {(v.detalles || []).map((d) => d.nombre_item).join(', ')}
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-slate-300">{v.metodo_pago}</td>
+                            <td className="py-3 px-4 text-center">
+                              <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                                v.estado === 'Completada' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' :
+                                v.estado === 'Pendiente' ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' :
+                                'bg-red-500/10 text-red-400 border-red-500/30'
+                              }`}>{v.estado}</span>
+                            </td>
+                            <td className="py-3 px-4 text-right font-mono font-bold text-white">
+                              ${Number(v.total).toLocaleString('es-CO')}
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <div className="flex items-center justify-center gap-1.5">
+                                <button
+                                  onClick={() => setFacturaSeleccionada(v)}
+                                  className="text-[11px] py-1 px-2.5 bg-slate-800 hover:bg-slate-700 text-sky-400 border border-slate-700 rounded-lg"
+                                >🧾 Ver</button>
+                                <button
+                                  onClick={() => generarFacturaPDF(v)}
+                                  className="text-[11px] py-1 px-2.5 bg-slate-800 hover:bg-slate-700 text-red-400 border border-slate-700 rounded-lg"
+                                >📄 PDF</button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* SECCIÓN 3: SOPORTE TÉCNICO */}
           {tab === 'soporte' && (
             <div className="bg-slate-900/80 border border-slate-800/80 p-6 rounded-2xl shadow-lg flex flex-col gap-6">
@@ -246,10 +479,18 @@ export default function ClienteDashboard() {
             </div>
           )}
         </main>
-      </div>
 
-      <Footer />
+        {/* Modal Factura */}
+        {facturaSeleccionada && (
+          <InvoiceModal
+            abierto={!!facturaSeleccionada}
+            venta={facturaSeleccionada}
+            onCerrar={() => setFacturaSeleccionada(null)}
+          />
+        )}
     </div>
   );
 }
+
+
 

@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/header';
 import Footer from '../components/footer';
 import { serviceService } from '../services/serviceService';
+import CheckoutModal from '../components/sales/CheckoutModal';
+import InvoiceModal from '../components/sales/InvoiceModal';
 
 const serviciosEstaticos = [
   {
@@ -31,16 +34,21 @@ const serviciosEstaticos = [
 ];
 
 export default function ServiciosPage() {
+  const navigate = useNavigate();
   const [servicios, setServicios] = useState([]);
   const [cargando, setCargando] = useState(true);
+  const [servicioAComprar, setServicioAComprar] = useState(null);
+  const [modalCheckout, setModalCheckout] = useState(false);
+  const [facturaGenerada, setFacturaGenerada] = useState(null);
 
   useEffect(() => {
     async function fetchServices() {
       try {
         setCargando(true);
         const data = await serviceService.getServices(false); // solo activos
-        if (data.success && data.servicios && data.servicios.length > 0) {
-          setServicios(data.servicios);
+        const list = Array.isArray(data) ? data : (data?.servicios || []);
+        if (list.length > 0) {
+          setServicios(list);
         } else {
           setServicios(serviciosEstaticos);
         }
@@ -99,7 +107,7 @@ export default function ServiciosPage() {
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-slate-700/60 flex items-center justify-between gap-4">
+                <div className="pt-4 border-t border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <span className="text-xs text-slate-500 block">Tarifa fija</span>
                     <span className="font-mono text-xl font-extrabold text-sky-400">
@@ -107,20 +115,59 @@ export default function ServiciosPage() {
                     </span>
                   </div>
 
-                  <a
-                    href={`https://wa.me/573000000000?text=Hola%20PCortes,%20me%20interesa%20agendar%20el%20servicio:%20${encodeURIComponent(serv.nombre)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all shadow-md flex items-center gap-1.5"
-                  >
-                    <span>💬 Agendar Servicio</span>
-                  </a>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setServicioAComprar(serv);
+                        setModalCheckout(true);
+                      }}
+                      className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl transition-all shadow-md shadow-emerald-600/20 flex items-center gap-1.5"
+                    >
+                      <span>🛠️ Solicitar en Línea</span>
+                    </button>
+
+                    <a
+                      href={`https://wa.me/573000000000?text=Hola%20PCortes,%20me%20interesa%20agendar%20el%20servicio:%20${encodeURIComponent(serv.nombre)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-slate-700/80 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-3 py-2.5 rounded-xl transition-all flex items-center gap-1"
+                    >
+                      <span>💬 WhatsApp</span>
+                    </a>
+                  </div>
                 </div>
               </div>
             ))}
           </section>
         )}
       </main>
+
+      {/* Modal Checkout Servicio */}
+      {modalCheckout && servicioAComprar && (
+        <CheckoutModal
+          abierto={modalCheckout}
+          item={servicioAComprar}
+          tipoItem="servicio"
+          onCerrar={() => {
+            setModalCheckout(false);
+            setServicioAComprar(null);
+          }}
+          onSuccess={(ventaCreada) => {
+            setFacturaGenerada(ventaCreada);
+          }}
+          onAbrirLogin={() => navigate('/login')}
+        />
+      )}
+
+      {/* Modal Factura Comercial */}
+      {facturaGenerada && (
+        <InvoiceModal
+          abierto={!!facturaGenerada}
+          venta={facturaGenerada}
+          onCerrar={() => setFacturaGenerada(null)}
+        />
+      )}
 
       <Footer />
     </div>

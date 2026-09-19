@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 /**
  * Componente flotante reutilizable de WhatsApp
@@ -8,12 +9,21 @@ export default function WhatsAppButton({
   mensaje = '¡Hola PCortes! Me gustaría recibir asesoría sobre sus productos y servicios.',
 }) {
   const [hover, setHover] = useState(false);
+  const location = useLocation();
+
+  // Ocultar botón de WhatsApp en los paneles de gestión
+  const esPanel = ['/admin', '/empleado', '/cliente'].some((path) =>
+    location.pathname.startsWith(path)
+  );
+
+  if (esPanel) return null;
 
   const url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
 
+
   return (
     <div
-      className="fixed bottom-6 right-6 z-50 flex items-center gap-3"
+      className="fixed bottom-6 left-6 z-50 flex items-center gap-3"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >

@@ -1,4 +1,8 @@
-const API_BASE_URL = 'http://localhost:3000/api/v1';
+// URL base configurable para despliegue en la nube (Railway / Vercel) o local
+const rawApiUrl = (import.meta.env.VITE_API_URL || '').trim();
+const API_BASE_URL = rawApiUrl
+  ? (rawApiUrl.endsWith('/api/v1') ? rawApiUrl : `${rawApiUrl.replace(/\/$/, '')}/api/v1`)
+  : 'http://localhost:3000/api/v1';
 
 /**
  * Cliente HTTP centralizado para peticiones a la API
@@ -19,7 +23,11 @@ export async function apiRequest(endpoint, { method = 'GET', body = null, header
   };
 
   try {
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+    let cleanEndpoint = endpoint;
+    if (cleanEndpoint.startsWith('/api/v1')) {
+      cleanEndpoint = cleanEndpoint.substring('/api/v1'.length);
+    }
+    const url = cleanEndpoint.startsWith('http') ? cleanEndpoint : `${API_BASE_URL}${cleanEndpoint}`;
     const response = await fetch(url, config);
     const data = await response.json().catch(() => ({}));
 
@@ -46,5 +54,11 @@ export async function apiRequest(endpoint, { method = 'GET', body = null, header
     throw err;
   }
 }
+
+apiRequest.get = (endpoint, options = {}) => apiRequest(endpoint, { ...options, method: 'GET' });
+apiRequest.post = (endpoint, body, options = {}) => apiRequest(endpoint, { ...options, method: 'POST', body });
+apiRequest.put = (endpoint, body, options = {}) => apiRequest(endpoint, { ...options, method: 'PUT', body });
+apiRequest.patch = (endpoint, body, options = {}) => apiRequest(endpoint, { ...options, method: 'PATCH', body });
+apiRequest.delete = (endpoint, options = {}) => apiRequest(endpoint, { ...options, method: 'DELETE' });
 
 export default apiRequest;

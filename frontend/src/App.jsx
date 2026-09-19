@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import WhatsAppButton from './components/ui/WhatsAppButton';
+import ChatbotWidget from './components/chatbot/ChatbotWidget';
 
 // Páginas públicas
 import IndexPage from './pages/index';
@@ -61,6 +62,9 @@ function App() {
 
         {/* Componente Flotante Global de WhatsApp */}
         <WhatsAppButton />
+
+        {/* Componente Flotante Global de Chatbot con IA */}
+        <ChatbotWidget />
       </BrowserRouter>
     </AuthProvider>
   );

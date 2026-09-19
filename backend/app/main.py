@@ -7,9 +7,10 @@ from app.database import engine, Base, SessionLocal
 from app.models import Role, User, Product, Service
 from app.auth import get_password_hash
 
-from app.routes import auth, usuarios, productos, servicios
+from app.routes import auth, usuarios, productos, servicios, ventas, pqrs, estadisticas, chatbot
 
 load_dotenv()
+
 
 PROJECT_NAME = os.getenv("PROJECT_NAME", "PCortes API Fullstack")
 API_V1_STR = os.getenv("API_V1_STR", "/api/v1")
@@ -68,11 +69,16 @@ def startup_db_init():
     except Exception as e:
         print(f"[WARN] No se pudo ejecutar el seed inicial: {e}")
 
-# Routers — Auth, Usuarios, Productos y Servicios bajo el prefijo versionado /api/v1/
+# Routers — Auth, Usuarios, Productos, Servicios y Ventas bajo el prefijo versionado /api/v1/
 app.include_router(auth.router, prefix=f"{API_V1_STR}/auth", tags=["Autenticación"])
 app.include_router(usuarios.router, prefix=f"{API_V1_STR}/usuarios", tags=["Usuarios"])
 app.include_router(productos.router, prefix=f"{API_V1_STR}/productos", tags=["Productos"])
 app.include_router(servicios.router, prefix=f"{API_V1_STR}/servicios", tags=["Servicios"])
+app.include_router(ventas.router, prefix=f"{API_V1_STR}/ventas", tags=["Ventas y Facturación"])
+app.include_router(pqrs.router, prefix=f"{API_V1_STR}/pqrs", tags=["PQR"])
+app.include_router(estadisticas.router, prefix=f"{API_V1_STR}/estadisticas", tags=["Estadísticas"])
+app.include_router(chatbot.router, prefix=f"{API_V1_STR}/chatbot", tags=["Chatbot IA"])
+
 
 
 @app.get("/")

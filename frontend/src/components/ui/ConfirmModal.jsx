@@ -16,7 +16,7 @@ export default function ConfirmModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 animate-fade-in backdrop-blur-xs">
-      <div className="bg-slate-900 border border-red-500/40 rounded-2xl shadow-2xl w-full max-w-md p-6 text-center">
+      <div className="bg-slate-900 border border-red-500/40 rounded-2xl shadow-2xl w-full max-w-md p-6 text-center animate-scale-in">
         <p className="text-4xl mb-3">⚠️</p>
         <h3 className="text-xl font-bold text-white mb-2">{titulo}</h3>
         <p className="text-slate-300 text-sm mb-6">

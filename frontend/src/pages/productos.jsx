@@ -1,27 +1,54 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/header';
 import Footer from '../components/footer';
 import { productService } from '../services/productService';
 import { productos as productosEstaticos } from '../components/carousel';
+import CheckoutModal from '../components/sales/CheckoutModal';
+import InvoiceModal from '../components/sales/InvoiceModal';
 
 export default function ProductosPage() {
+  const navigate = useNavigate();
   const [productos, setProductos] = useState([]);
   const [cargando, setCargando] = useState(true);
+  const [itemAComprar, setItemAComprar] = useState(null);
+  const [modalCheckout, setModalCheckout] = useState(false);
+  const [facturaGenerada, setFacturaGenerada] = useState(null);
 
   useEffect(() => {
     async function fetchProducts() {
       try {
         setCargando(true);
         const data = await productService.getProducts(false); // solo activos
-        if (data.success && data.productos && data.productos.length > 0) {
-          setProductos(data.productos);
+        const list = Array.isArray(data) ? data : (data?.productos || []);
+        if (list.length > 0) {
+          const prodsConImagen = list.map((p, idx) => ({
+            ...p,
+            nombre: p.nombre || p.titulo,
+            titulo: p.nombre || p.titulo,
+            precio: Number(p.precio || 0),
+            stock: Number(p.stock !== undefined ? p.stock : 0),
+            src: p.imagen || p.src || productosEstaticos[idx % productosEstaticos.length]?.src,
+          }));
+          setProductos(prodsConImagen);
         } else {
-          setProductos(productosEstaticos);
+          const estaticosConPrecio = productosEstaticos.map((p, idx) => ({
+            ...p,
+            nombre: p.titulo,
+            precio: 3500000 + (idx + 1) * 600000,
+            stock: 10,
+          }));
+          setProductos(estaticosConPrecio);
         }
       } catch (err) {
-        console.warn('Usando catálogo estático por falta de conexión:', err);
-        setProductos(productosEstaticos);
+        console.warn('Usando catálogo con precios por falta de conexión:', err);
+        const estaticosConPrecio = productosEstaticos.map((p, idx) => ({
+          ...p,
+          nombre: p.titulo,
+          precio: 3500000 + (idx + 1) * 600000,
+          stock: 10,
+        }));
+        setProductos(estaticosConPrecio);
       } finally {
         setCargando(false);
       }
@@ -68,11 +95,13 @@ export default function ProductosPage() {
                     <span className="absolute top-3 left-3 bg-sky-600 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow">
                       #{prod.id}
                     </span>
-                    {prod.stock !== undefined && (
-                      <span className="absolute top-3 right-3 bg-slate-900/80 border border-slate-700 text-slate-200 text-xs font-semibold px-2 py-1 rounded-md">
-                        Stock: {prod.stock}
-                      </span>
-                    )}
+                    <span className={`absolute top-3 right-3 text-xs font-semibold px-2 py-1 rounded-md border ${
+                      Number(prod.stock) > 0
+                        ? 'bg-slate-900/90 border-slate-700 text-emerald-400'
+                        : 'bg-red-500/20 border-red-500/40 text-red-400'
+                    }`}>
+                      {Number(prod.stock) > 0 ? `Stock: ${prod.stock} unid.` : 'Agotado'}
+                    </span>
                   </div>
 
                   {/* Contenido */}
@@ -84,20 +113,36 @@ export default function ProductosPage() {
                       {prod.descripcion}
                     </p>
 
-                    {prod.precio && (
-                      <p className="font-mono text-xl font-extrabold text-sky-400">
-                        ${parseFloat(prod.precio).toLocaleString('es-CO')} COP
-                      </p>
-                    )}
+                    <p className="font-mono text-xl font-extrabold text-sky-400">
+                      ${Number(prod.precio || 0).toLocaleString('es-CO')} COP
+                    </p>
 
-                    <a
-                      href={`https://wa.me/573000000000?text=Hola,%20deseo%20comprar%20el%20producto:%20${encodeURIComponent(prod.nombre || prod.titulo)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-auto w-full text-center bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
-                    >
-                      <span>💬 Comprar por WhatsApp</span>
-                    </a>
+                    <div className="mt-auto flex flex-col gap-2 pt-2">
+                      <button
+                        type="button"
+                        disabled={Number(prod.stock || 0) <= 0}
+                        onClick={() => {
+                          setItemAComprar(prod);
+                          setModalCheckout(true);
+                        }}
+                        className={`w-full text-center text-xs font-bold py-2.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 ${
+                          Number(prod.stock || 0) > 0
+                            ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20 cursor-pointer'
+                            : 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                        }`}
+                      >
+                        <span>{Number(prod.stock || 0) > 0 ? '🛒 Comprar en Línea' : '❌ Sin Stock'}</span>
+                      </button>
+
+                      <a
+                        href={`https://wa.me/573000000000?text=Hola,%20deseo%20comprar%20el%20producto:%20${encodeURIComponent(prod.nombre || prod.titulo)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full text-center bg-slate-700/80 hover:bg-slate-700 text-slate-300 text-xs font-semibold py-2 rounded-xl transition-all flex items-center justify-center gap-2"
+                      >
+                        <span>💬 Consultar WhatsApp</span>
+                      </a>
+                    </div>
                   </div>
                 </div>
               );
@@ -105,6 +150,32 @@ export default function ProductosPage() {
           </section>
         )}
       </main>
+
+      {/* Modal de Checkout / Compra directa */}
+      {modalCheckout && itemAComprar && (
+        <CheckoutModal
+          abierto={modalCheckout}
+          item={itemAComprar}
+          tipoItem="producto"
+          onCerrar={() => {
+            setModalCheckout(false);
+            setItemAComprar(null);
+          }}
+          onSuccess={(ventaCreada) => {
+            setFacturaGenerada(ventaCreada);
+          }}
+          onAbrirLogin={() => navigate('/login')}
+        />
+      )}
+
+      {/* Modal Factura Comercial */}
+      {facturaGenerada && (
+        <InvoiceModal
+          abierto={!!facturaGenerada}
+          venta={facturaGenerada}
+          onCerrar={() => setFacturaGenerada(null)}
+        />
+      )}
 
       <Footer />
     </div>
