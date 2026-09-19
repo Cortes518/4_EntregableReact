@@ -133,12 +133,7 @@ export default function Login() {
             </Button>
           </form>
 
-          {/* Accesos rápidos de prueba sugeridos */}
-          <div className="mt-4 pt-4 border-t border-slate-700/60 text-xs text-slate-400">
-            <p className="font-semibold text-slate-300 mb-1">Cuentas de prueba:</p>
-            <p>👑 Admin: <code className="text-sky-400">admin@pcortes.com</code> | <code className="text-sky-400">Admin12345*</code></p>
-            <p>💼 Empleado: <code className="text-sky-400">empleado@pcortes.com</code> | <code className="text-sky-400">Empleado12345*</code></p>
-          </div>
+
 
           <div className="mt-5 flex flex-col items-center gap-3">
             <button
