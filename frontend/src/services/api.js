@@ -1,5 +1,8 @@
 // URL base configurable para despliegue en la nube (Railway / Vercel) o local
-const rawApiUrl = (import.meta.env.VITE_API_URL || '').trim();
+let rawApiUrl = (import.meta.env.VITE_API_URL || '').trim();
+if (rawApiUrl && !rawApiUrl.startsWith('http://') && !rawApiUrl.startsWith('https://')) {
+  rawApiUrl = `https://${rawApiUrl}`;
+}
 const API_BASE_URL = rawApiUrl
   ? (rawApiUrl.endsWith('/api/v1') ? rawApiUrl : `${rawApiUrl.replace(/\/$/, '')}/api/v1`)
   : 'http://localhost:3000/api/v1';

@@ -7,8 +7,9 @@ from sqlalchemy.orm import sessionmaker
 load_dotenv()
 
 # Resolver URL de base de datos para entorno local o nube (Railway / Docker)
-raw_db_url = os.getenv("MYSQL_URL") or os.getenv("DATABASE_URL")
-if raw_db_url and not raw_db_url.startswith("sqlite"):
+raw_db_url = (os.getenv("MYSQL_URL") or os.getenv("DATABASE_URL") or "").strip()
+# Descartar si el valor es un placeholder literal no resuelto (como "MYSQL_URL") o no contiene "://"
+if raw_db_url and "://" in raw_db_url and not raw_db_url.startswith("sqlite"):
     # Normalizar esquema para compatibilidad con PyMySQL
     if raw_db_url.startswith("mysql://"):
         DATABASE_URL = raw_db_url.replace("mysql://", "mysql+pymysql://", 1)
@@ -18,7 +19,7 @@ if raw_db_url and not raw_db_url.startswith("sqlite"):
     DB_HOST = os.getenv("MYSQLHOST", os.getenv("DB_HOST", "localhost"))
     DB_PORT = os.getenv("MYSQLPORT", os.getenv("DB_PORT", "3306"))
 else:
-    # Variables de entorno individuales según la guía del instructor
+    # Variables de entorno individuales según la guía del instructor (o Railway MYSQLHOST/PORT/USER/PASSWORD)
     DB_HOST = os.getenv("MYSQLHOST") or os.getenv("DB_HOST", "localhost")
     DB_PORT = os.getenv("MYSQLPORT") or os.getenv("DB_PORT", "3306")
     DB_NAME = os.getenv("MYSQLDATABASE") or os.getenv("DB_NAME", "proyecto_react")
