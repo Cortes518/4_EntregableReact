@@ -1,4 +1,4 @@
-﻿{
+{
   "info": {
     "name": "PCortes API - FastAPI",
     "_postman_id": "pcortes-fastapi-2026",
@@ -257,6 +257,109 @@
             "method": "DELETE",
             "header": [],
             "url": {"raw": "{{base_url}}/servicios/1","host": ["{{base_url}}"],"path": ["servicios","1"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ventas y Facturas",
+      "item": [
+        {
+          "name": "Listar Historial de Ventas",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization","value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/ventas","host": ["{{base_url}}"],"path": ["ventas"]}
+          }
+        },
+        {
+          "name": "Registrar Nueva Venta / Factura",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type","value": "application/json"},{"key": "Authorization","value": "Bearer {{token}}"}],
+            "body": {"mode": "raw","raw": "{\n  \"id_cliente\": 1,\n  \"metodo_pago\": \"Transferencia\",\n  \"descuento\": 0,\n  \"impuesto\": 19,\n  \"items\": [\n    {\n      \"tipo_item\": \"producto\",\n      \"id_producto\": 1,\n      \"nombre_item\": \"PC Gamer Ultra RTX 4090\",\n      \"cantidad\": 1,\n      \"precio_unitario\": 8500000\n    }\n  ]\n}"},
+            "url": {"raw": "{{base_url}}/ventas","host": ["{{base_url}}"],"path": ["ventas"]}
+          }
+        },
+        {
+          "name": "Buscar Factura por Número Correlativo",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization","value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/ventas/factura/FAC-2026-0001","host": ["{{base_url}}"],"path": ["ventas","factura","FAC-2026-0001"]}
+          }
+        },
+        {
+          "name": "Reporte Diario de Ventas",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization","value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/ventas/reporte-diario","host": ["{{base_url}}"],"path": ["ventas","reporte-diario"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chatbot e IA",
+      "item": [
+        {
+          "name": "Enviar Mensaje al Chatbot (IA)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type","value": "application/json"}],
+            "body": {"mode": "raw","raw": "{\n  \"mensaje\": \"¿Qué servicios técnicos ofrecen en PCortes?\"\n}"},
+            "url": {"raw": "{{base_url}}/chatbot/mensajes","host": ["{{base_url}}"],"path": ["chatbot","mensajes"]}
+          }
+        },
+        {
+          "name": "Listar Conversaciones del Usuario",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization","value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/chatbot/conversaciones","host": ["{{base_url}}"],"path": ["chatbot","conversaciones"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "PQR (Peticiones, Quejas, Reclamos)",
+      "item": [
+        {
+          "name": "Listar PQR",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization","value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/pqrs","host": ["{{base_url}}"],"path": ["pqrs"]}
+          }
+        },
+        {
+          "name": "Radicar nueva PQR",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type","value": "application/json"},{"key": "Authorization","value": "Bearer {{token}}"}],
+            "body": {"mode": "raw","raw": "{\n  \"tipo\": \"Peticion\",\n  \"asunto\": \"Consulta sobre garantia de ensamble\",\n  \"descripcion\": \"Deseo saber si el ensamble cuenta con certificado de pruebas de estres.\"\n}"},
+            "url": {"raw": "{{base_url}}/pqrs","host": ["{{base_url}}"],"path": ["pqrs"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Estadísticas y Métricas",
+      "item": [
+        {
+          "name": "Obtener Métricas del Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization","value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/estadisticas/dashboard","host": ["{{base_url}}"],"path": ["estadisticas","dashboard"]}
+          }
+        },
+        {
+          "name": "Datos Gráficos de Ventas",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization","value": "Bearer {{token}}"}],
+            "url": {"raw": "{{base_url}}/estadisticas/ventas-chart?agrupacion=dia","host": ["{{base_url}}"],"path": ["estadisticas","ventas-chart"],"query": [{"key": "agrupacion","value": "dia"}]}
           }
         }
       ]
