@@ -142,24 +142,24 @@ def forgot_password(data: ForgotPasswordRequest, db: Session = Depends(get_db)):
 
     nombre_completo = f"{user.nombres} {user.apellidos}".strip() or user.nombres
 
-    # Enviar correo electrónico real mediante SMTP
+    # Enviar correo electrónico mediante SMTP o modo demostración si no está configurado
     try:
-        send_reset_code_email(to_email=user.email, user_name=nombre_completo, code=code)
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+        email_sent = send_reset_code_email(to_email=user.email, user_name=nombre_completo, code=code)
+        if email_sent:
+            message = f"Código de verificación enviado exitosamente a {data.email}. Por favor revisa tu bandeja de entrada o spam."
+        else:
+            message = f"Código de recuperación generado: {code} (Servidor SMTP no configurado en Railway; ingresa este código para restablecer)."
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error inesperado al despachar el correo: {str(e)}"
+            detail=f"Error al procesar el código de recuperación: {str(e)}"
         )
 
     return {
         "success": True,
-        "message": f"Código de verificación enviado exitosamente a {data.email}. Por favor revisa tu bandeja de entrada o spam.",
-        "email": user.email
+        "message": message,
+        "email": user.email,
+        "code_simulado": code if not email_sent else None
     }
 
 @router.post("/reset-password")

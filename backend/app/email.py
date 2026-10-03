@@ -1,4 +1,4 @@
-﻿import os
+import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -14,8 +14,8 @@ SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", SMTP_USER)
 
 def send_reset_code_email(to_email: str, user_name: str, code: str) -> bool:
     if not SMTP_USER or not SMTP_PASSWORD:
-        print("[WARN] SMTP_USER o SMTP_PASSWORD no configurados en .env.")
-        raise ValueError("El servidor de correo no está configurado. Por favor define SMTP_USER y SMTP_PASSWORD en el archivo .env.")
+        print(f"[WARN] SMTP_USER o SMTP_PASSWORD no configurados. Código de simulación para {to_email}: {code}")
+        return False
 
     subject = f"🔐 Código de Recuperación de Contraseña: {code} - PCortes"
 
