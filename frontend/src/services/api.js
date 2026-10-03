@@ -5,7 +5,7 @@ if (rawApiUrl && !rawApiUrl.startsWith('http://') && !rawApiUrl.startsWith('http
 }
 const API_BASE_URL = rawApiUrl
   ? (rawApiUrl.endsWith('/api/v1') ? rawApiUrl : `${rawApiUrl.replace(/\/$/, '')}/api/v1`)
-  : 'http://localhost:3000/api/v1';
+  : 'http://localhost:8080/api/v1';
 
 /**
  * Cliente HTTP centralizado para peticiones a la API
@@ -52,7 +52,7 @@ export async function apiRequest(endpoint, { method = 'GET', body = null, header
     return data;
   } catch (err) {
     if (err.name === 'TypeError' && err.message.includes('fetch')) {
-      throw new Error('No se pudo conectar con el servidor backend. Verifica que esté iniciado en el puerto 3000.');
+      throw new Error('No se pudo conectar con el servidor backend. Verifica que esté iniciado en el puerto 8080.');
     }
     throw err;
   }
