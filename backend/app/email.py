@@ -1,5 +1,8 @@
 import os
+import json
 import smtplib
+import urllib.request
+import urllib.error
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
@@ -12,9 +15,34 @@ SMTP_USER = os.getenv("SMTP_USER", "")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", SMTP_USER)
 
+# Proveedores por API HTTPS (funcionan en Railway, que bloquea SMTP saliente)
+BREVO_API_KEY = os.getenv("BREVO_API_KEY", "").strip()
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
+RESEND_FROM = os.getenv("RESEND_FROM", "PCortes <onboarding@resend.dev>")
+
+
+def _send_via_http(url: str, headers: dict, payload: dict) -> None:
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json", "User-Agent": "PCortes/1.0", **headers},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            resp.read()
+    except urllib.error.HTTPError as e:
+        detalle = e.read().decode("utf-8", errors="ignore")
+        print(f"[ERROR] API de correo respondió {e.code}: {detalle}")
+        raise ValueError(f"El proveedor de correo rechazó el envío ({e.code}): {detalle[:200]}")
+    except Exception as e:
+        print(f"[ERROR] No se pudo contactar la API de correo: {e}")
+        raise ValueError(f"No se pudo contactar el proveedor de correo: {e}")
+
+
 def send_reset_code_email(to_email: str, user_name: str, code: str) -> bool:
-    if not SMTP_USER or not SMTP_PASSWORD:
-        print(f"[WARN] SMTP_USER o SMTP_PASSWORD no configurados. Código de simulación para {to_email}: {code}")
+    if not (BREVO_API_KEY or RESEND_API_KEY or (SMTP_USER and SMTP_PASSWORD)):
+        print(f"[WARN] Ningún proveedor de correo configurado. Código de simulación para {to_email}: {code}")
         return False
 
     subject = f"🔐 Código de Recuperación de Contraseña: {code} - PCortes"
@@ -131,13 +159,44 @@ def send_reset_code_email(to_email: str, user_name: str, code: str) -> bool:
     </html>
     """
 
+    # Versión texto plano alternativa
+    plain_text = f"Hola {user_name},\n\nTu código de verificación para restablecer tu contraseña en PCortes es: {code}\n\nEste código expira en 15 minutos.\nSi no solicitaste este cambio, ignora este mensaje."
+
+    # Railway (planes Free/Hobby) bloquea SMTP saliente: se prioriza envío por API HTTPS
+    if BREVO_API_KEY:
+        _send_via_http(
+            "https://api.brevo.com/v3/smtp/email",
+            {"api-key": BREVO_API_KEY},
+            {
+                "sender": {"name": "PCortes Soporte", "email": SMTP_FROM_EMAIL},
+                "to": [{"email": to_email}],
+                "subject": subject,
+                "htmlContent": html_content,
+                "textContent": plain_text,
+            },
+        )
+        print(f"[OK] Correo enviado vía Brevo a {to_email}")
+        return True
+
+    if RESEND_API_KEY:
+        _send_via_http(
+            "https://api.resend.com/emails",
+            {"Authorization": f"Bearer {RESEND_API_KEY}"},
+            {
+                "from": RESEND_FROM,
+                "to": [to_email],
+                "subject": subject,
+                "html": html_content,
+                "text": plain_text,
+            },
+        )
+        print(f"[OK] Correo enviado vía Resend a {to_email}")
+        return True
+
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = f"PCortes Soporte <{SMTP_FROM_EMAIL}>"
     msg["To"] = to_email
-
-    # Versión texto plano alternativa
-    plain_text = f"Hola {user_name},\n\nTu código de verificación para restablecer tu contraseña en PCortes es: {code}\n\nEste código expira en 15 minutos.\nSi no solicitaste este cambio, ignora este mensaje."
     msg.attach(MIMEText(plain_text, "plain"))
     msg.attach(MIMEText(html_content, "html"))
 
